@@ -1,22 +1,11 @@
 /// <reference types="firefox-webext-browser"/>
 
-/** @type {?browser.runtime.Port} */
-let port = null;
 /** @type {?TitleHandlerFunc} */
 let handler = null;
 
 browser.action.onClicked.addListener(async () => {
 	console.log("Connecting to native app...");
-	port = browser.runtime.connectNative("be.suyo.firefox_songtitle");
 	try {
-		port.onDisconnect.addListener((port) => {
-			if (port.error) {
-				console.log(`Disconnected due to an error: ${port.error.message}`);
-			} else {
-				console.log(`Disconnected`, port);
-			}
-		});
-
 		const tabs = await browser.tabs.query({ currentWindow: true, active: true });
 		if (!tabs || !tabs[0]) {
 			sendError("Unknown error trying to find your current tab.");
@@ -58,14 +47,17 @@ browser.action.onClicked.addListener(async () => {
  * @param {?browser.tabs._OnUpdatedChangeInfo} _changeInfo
  * @param {browser.tabs.Tab} tab
  */
-function sendSongTitle(_tabId, _changeInfo, tab) {
-	if (!port || !handler || !tab.title) return;
+async function sendSongTitle(_tabId, _changeInfo, tab) {
+	if (!handler || !tab.title) return;
 	const result = handler(tab.title);
 	if (result == null) return;
 
 	const msg = `${result.title} - ${result.artist}`;
 	console.log(msg);
-	port.postMessage(msg);
+	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_songtitle", msg);
+	if (ret != "1") {
+		sendError("Error in desktop application: " + ret);
+	}
 }
 
 /**
