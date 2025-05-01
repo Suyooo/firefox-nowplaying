@@ -1,3 +1,4 @@
 node_modules
+native/.venv
 native/error.txt
 native/songtitle.txt

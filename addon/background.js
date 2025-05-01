@@ -1,7 +1,7 @@
 /// <reference types="firefox-webext-browser"/>
 
 /** @type {boolean} */
-let listening = false;
+let listening;
 
 browser.action.onClicked.addListener(async () => {
 	console.log("Is listening: " + listening);
