@@ -1,10 +1,11 @@
 {
-	"name": "Song Title from Tab to File",
-	"description": "Store currently playing song on YouTube or Spotify in a text file",
+	"name": "Now Playing",
+	"description": "Simple extension to automatically fetch the currently playing song from a YouTube or Spotify tab, and put it on a stream widget or in a text file.",
 	"manifest_version": 3,
 	"version": "1.0",
 	"icons": {
-		"48": "icons/message.svg"
+		"48": "icon.svg",
+		"96": "icon.svg"
 	},
 
 	"browser_specific_settings": {
@@ -19,9 +20,24 @@
 	},
 
 	"action": {
-		"default_icon": "icons/message.svg"
+		"default_title": "Activate Now Playing",
+		"default_icon": {
+			"16": "icon.svg",
+			"32": "icon.svg"
+		},
+		"theme_icons": [
+			{
+				"light": "icon-dark.svg",
+				"dark": "icon.svg",
+				"size": 16
+			},
+			{
+				"light": "icon-dark.svg",
+				"dark": "icon.svg",
+				"size": 32
+			}
+		]
 	},
 
-	"permissions": ["nativeMessaging", "tabs"],
-	"host_permissions": ["*://*.youtube.com/", "*://*.spotify.com/"]
+	"permissions": ["nativeMessaging", "notifications", "tabs"]
 }

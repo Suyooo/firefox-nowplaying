@@ -19,7 +19,7 @@ if __name__ == '__main__':
 	try:
 		receivedMessage = receive()
 		with open("songtitle.txt", "a") as outfile:
-			outfile.write(receivedMessage)
+			outfile.write(str(receivedMessage))
 			outfile.write("\n")
 		send("1")
 	except Exception as e:
