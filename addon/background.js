@@ -1,14 +1,5 @@
 /// <reference types="firefox-webext-browser"/>
 
-/** @type {boolean} */
-let listening;
-
-browser.action.onClicked.addListener(async () => {
-	console.log("Is listening: " + listening);
-	if (listening) unlisten();
-	else listen();
-});
-
 async function listen() {
 	try {
 		const tabs = await browser.tabs.query({ currentWindow: true, active: true });
@@ -18,7 +9,7 @@ async function listen() {
 			return;
 		}
 		const tab = tabs[0];
-		if (!tab.url || !tab.title) {
+		if (!tab.url || !tab.title || !tab.id) {
 			sendError("No website loaded in this tab.");
 			return;
 		}
@@ -32,12 +23,11 @@ async function listen() {
 			return;
 		}
 
-		console.log(`Adding listener on tab #${tab.id}`);
-		browser.tabs.onUpdated.addListener(sendSongTitle, { tabId: tab.id });
-		sendSongTitle(null, null, tab);
+		console.log(`Setting listening tab ID to #${tab.id}`);
+		await browser.storage.session.set({ tabId: tab.id });
+		sendSongTitle(tab.id, null, tab);
 
-		listening = true;
-		updateActionButton();
+		updateActionButton(true);
 		notify("Started, now following this tab.");
 	} catch (e) {
 		sendError(e.message);
@@ -45,10 +35,9 @@ async function listen() {
 }
 
 async function unlisten() {
-	console.log(`Removing listener`);
-	browser.tabs.onUpdated.removeListener(sendSongTitle);
-	listening = false;
-	updateActionButton();
+	console.log(`Unsetting listening tab ID`);
+	await browser.storage.session.set({ tabId: null });
+	updateActionButton(false);
 	notify("Stopped.");
 }
 
@@ -64,7 +53,10 @@ function notify(message) {
 	});
 }
 
-function updateActionButton() {
+/**
+ * @param {boolean} [listening]
+ */
+function updateActionButton(listening) {
 	browser.action.setTitle({ title: listening ? "Stop Now Playing" : "Start Now Playing" });
 	browser.action.setBadgeBackgroundColor({ color: "red" });
 	browser.action.setBadgeTextColor({ color: "white" });
@@ -79,11 +71,12 @@ function getTabHost(url) {
 }
 
 /**
- * @param {?number} _tabId
+ * @param {number} tabId
  * @param {?browser.tabs._OnUpdatedChangeInfo} _changeInfo
  * @param {browser.tabs.Tab} tab
  */
-async function sendSongTitle(_tabId, _changeInfo, tab) {
+async function sendSongTitle(tabId, _changeInfo, tab) {
+	if (tabId != (await browser.storage.session.get({ tabId: null })).tabId) return;
 	console.log("Received tab update.", tab.url, tab.title);
 	if (!tab.url || !tab.title) return;
 	const tabHost = getTabHost(tab.url);
@@ -131,3 +124,12 @@ const SITE_HANDLERS = {
 		return { title: pageTitle.substring(0, pageTitle.length - 10) };
 	},
 };
+
+browser.action.onClicked.addListener(async () => {
+	const listeningTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	console.log("Currently listening to.", listeningTabId);
+	if (listeningTabId !== null) unlisten();
+	else listen();
+});
+
+browser.tabs.onUpdated.addListener(sendSongTitle, { urls: Object.keys(SITE_HANDLERS).map((k) => `*://*.${k}/*`) });

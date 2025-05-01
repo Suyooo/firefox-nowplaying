@@ -20,7 +20,6 @@
 	},
 
 	"action": {
-		"default_title": "Activate Now Playing",
 		"default_icon": {
 			"16": "icon.svg",
 			"32": "icon.svg"
@@ -39,5 +38,5 @@
 		]
 	},
 
-	"permissions": ["nativeMessaging", "notifications", "tabs"]
+	"permissions": ["nativeMessaging", "notifications", "storage", "tabs"]
 }

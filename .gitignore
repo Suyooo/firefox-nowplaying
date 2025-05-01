@@ -1,4 +1,5 @@
 node_modules
+native/__pycache__
 native/.venv
 native/error.txt
 native/songtitle.txt
