@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import json
+import os
+import re
 import sys
 
 
@@ -16,14 +18,36 @@ def send(msg):
 
 
 if __name__ == '__main__':
-	try:
-		receivedMessage = receive()
-		with open("songtitle.txt", "a") as outfile:
-			outfile.write(str(receivedMessage))
-			outfile.write("\n")
-		send("1")
-	except Exception as e:
-		msg = str(e)
-		with open("error.txt", "w") as outfile:
-			outfile.write(msg)
-		send(msg)
+	if os.path.isfile("settings.json"):
+		with open("settings.json", "r") as configfile:
+			config = json.load(configfile)
+	else:
+		config = {
+			"file_path": "songtitle.txt",
+			"wrap_html": False,
+			"format": "{$title$}{$if_artist$ - $}{$artist$}",
+		}
+
+	if len(sys.argv) == 0:
+		# Config UI
+		pass
+	else:
+		# Receiving data from Firefox
+		try:
+			msg = receive()
+			formatted = config["format"]
+			formatted = formatted.replace("{$title$}", msg["title"])
+			formatted = formatted.replace(
+				"{$artist$}", msg["artist"] if "artist" in msg else "")
+			formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}",
+                            r"\1" if "artist" in msg else "", formatted)
+
+			with open(config["file_path"], "w") as outfile:
+				outfile.write(formatted)
+				outfile.write("\n")
+			send("1")
+		except Exception as e:
+			msg = str(e)
+			with open("error.txt", "w") as outfile:
+				outfile.write(msg)
+			send(msg)
