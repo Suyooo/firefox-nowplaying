@@ -1,0 +1,7 @@
+{
+	"name": "be.suyo.firefox_songtitle",
+	"description": "Song Title from Tab to File",
+	"path": "/mnt/quickdata/Nextcloud/Projekte/firefox-songtitle/native/main.py",
+	"type": "stdio",
+	"allowed_extensions": ["firefox-songtitle@suyo.be"]
+}

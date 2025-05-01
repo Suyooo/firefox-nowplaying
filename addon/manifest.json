@@ -1,0 +1,27 @@
+{
+	"name": "Song Title from Tab to File",
+	"description": "Store currently playing song on YouTube or Spotify in a text file",
+	"manifest_version": 3,
+	"version": "1.0",
+	"icons": {
+		"48": "icons/message.svg"
+	},
+
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "firefox-songtitle@suyo.be",
+			"strict_min_version": "109.0"
+		}
+	},
+
+	"background": {
+		"scripts": ["background.js"]
+	},
+
+	"action": {
+		"default_icon": "icons/message.svg"
+	},
+
+	"permissions": ["nativeMessaging", "tabs"],
+	"host_permissions": ["*://*.youtube.com/", "*://*.spotify.com/"]
+}
