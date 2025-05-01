@@ -40,6 +40,7 @@ async function unlisten() {
 	updateActionButton(false);
 	notify("Stopped.");
 }
+// TODO stop extension if tab is closed
 
 /**
  * @param {string} message
@@ -84,12 +85,12 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 
 	console.log("Using handler for " + tabHost);
 	const handler = SITE_HANDLERS[tabHost];
-	if (handler == null) sendError(`Now Playing does not support ${tabHost}.`);
+	if (handler == null) sendError(`Now Playing does not support ${tabHost}.`); // TODO stop extension
 	const result = handler(tab.title);
 	if (result == null) return;
 
 	console.log("Sending.", result);
-	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_songtitle", result);
+	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", result);
 	console.log("Application replied.", ret);
 	if (ret != "1") {
 		sendError("Error in desktop application: " + ret);

@@ -1,9 +1,0 @@
-{
-	"name": "be.suyo.firefox_songtitle",
-	"description": "Now Playing",
-	"path": "/mnt/quickdata/Nextcloud/Projekte/firefox-songtitle/native/main.py",
-	"type": "stdio",
-	"allowed_extensions": [
-		"firefox-songtitle@suyo.be"
-	]
-}

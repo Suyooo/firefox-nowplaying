@@ -1,0 +1,9 @@
+{
+	"name": "be.suyo.firefox_nowplaying",
+	"description": "Now Playing",
+	"path": "",
+	"type": "stdio",
+	"allowed_extensions": [
+		"firefox-nowplaying@suyo.be"
+	]
+}

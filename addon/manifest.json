@@ -1,6 +1,6 @@
 {
 	"name": "Now Playing",
-	"description": "Simple extension to automatically fetch the currently playing song from a YouTube or Spotify tab, and put it on a stream widget or in a text file.",
+	"description": "Simple extension to automatically fetch the currently playing song from a YouTube or Spotify tab, and put it in a text file for stream widgets.",
 	"manifest_version": 3,
 	"version": "1.0",
 	"icons": {
@@ -10,7 +10,7 @@
 
 	"browser_specific_settings": {
 		"gecko": {
-			"id": "firefox-songtitle@suyo.be",
+			"id": "firefox-nowplaying@suyo.be",
 			"strict_min_version": "109.0"
 		}
 	},

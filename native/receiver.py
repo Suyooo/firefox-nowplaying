@@ -23,7 +23,7 @@ def handle(config):
 		formatted = formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if "artist" in msg else "", formatted)
 
-		with open(config["file_path"], "w") as outfile:
+		with open(os.path.join(os.path.dirname(__file__), "nowplaying.txt"), "w") as outfile:
 			outfile.write(formatted)
 			outfile.write("\n")
 		send("1")
