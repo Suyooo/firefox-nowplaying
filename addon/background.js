@@ -206,7 +206,7 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (result == null) return;
 
 	console.log("Sending.", result);
-	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", result);
+	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", result).catch((e) => e);
 	console.log("Application replied.", ret);
 	if (ret != "1") {
 		sendError("Error in desktop application: " + ret);
