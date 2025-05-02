@@ -44,6 +44,13 @@ browser.tabs.onRemoved.addListener(async (tabId) => {
 
 browser.tabs.onUpdated.addListener(sendSongTitle);
 
+// Handle onUpdateAvailable to avoid restarts while the plugin is active. Only reload if the connection is stopped
+browser.runtime.onUpdateAvailable.addListener(async () => {
+	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	console.log("Update available, currently following.", followedTabId);
+	if (followedTabId === null) browser.runtime.reload();
+});
+
 /*
  * START / STOP
  */
