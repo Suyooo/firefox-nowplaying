@@ -38,5 +38,5 @@
 		]
 	},
 
-	"permissions": ["activeTab", "nativeMessaging", "notifications", "storage"]
+	"permissions": ["activeTab", "history", "nativeMessaging", "notifications", "scripting", "storage"]
 }

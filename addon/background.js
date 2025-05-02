@@ -1,6 +1,31 @@
 /// <reference types="firefox-webext-browser"/>
 
 /*
+ * SITE HANDLERS
+ */
+
+/**
+ * @callback TitleHandlerFunc
+ * @param {string} pageTitle
+ * @returns {?{title: string, artist?: string}}
+ */
+
+/**
+ * @type {Object.<string, TitleHandlerFunc>}
+ */
+const SITE_HANDLERS = {
+	"spotify.com": (pageTitle) => {
+		const split = pageTitle.split(" • ");
+		if (split.length !== 2) return null;
+		return { title: split[0], artist: split[1] };
+	},
+	"youtube.com": (pageTitle) => {
+		if (!pageTitle.endsWith(" - YouTube")) return null;
+		return { title: pageTitle.substring(0, pageTitle.length - 10) };
+	},
+};
+
+/*
  * LISTENERS
  */
 
@@ -22,6 +47,8 @@ browser.tabs.onUpdated.addListener(sendSongTitle);
 /*
  * START / STOP
  */
+
+const TITLE_PREFIX = "🔴 NP | ";
 
 async function start() {
 	try {
@@ -61,9 +88,28 @@ async function start() {
  * @param {string | undefined} [reason]
  */
 async function stop(reason) {
+	/** @type {?number} */
+	const tabId = (await browser.storage.session.get({ tabId: null })).tabId;
 	console.log(`Unsetting listening tab ID`);
 	await browser.storage.session.set({ tabId: null });
 	updateActionButton(false);
+
+	if (tabId) {
+		try {
+			await browser.scripting.executeScript({
+				target: { tabId },
+				args: [TITLE_PREFIX],
+				func: (/** @type {string} */ tp) => {
+					if (document.title.startsWith(tp)) {
+						document.title = document.title.substring(tp.length);
+					}
+				},
+			});
+		} catch (e) {
+			// Ignore error - the tab might have been closed so it doesn't exist anymore
+		}
+	}
+
 	if (reason) notify(`Stopped (${reason}).`);
 	else notify("Stopped.");
 }
@@ -113,6 +159,8 @@ function getTabHost(url) {
 	return new URL(url).host.split(".").slice(-2, 99).join(".");
 }
 
+let previousWasUnknown = false;
+
 /**
  * @param {number} tabId
  * @param {?browser.tabs._OnUpdatedChangeInfo} _changeInfo
@@ -122,11 +170,34 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (tabId != (await browser.storage.session.get({ tabId: null })).tabId) return;
 	console.log("Received followed tab update.", tab.url, tab.title);
 	if (!tab.url) {
-		stop(`The followed tab left the page`);
+		// This potentially means we've lost the activeTab permission. Emphasis on "potentially".
+		// I guess the activeTab permission is careful as long as it's not sure it's staying on the same domain and
+		// sends an onUpdated event with the sensitive data missing even though we should get it, and only delivers
+		// it later. So, we only give up if we get two unknowns in a row.
+		if (previousWasUnknown) {
+			stop(`The followed tab left the page`);
+			previousWasUnknown = false;
+		} else {
+			previousWasUnknown = true;
+		}
 		return;
 	}
+	previousWasUnknown = false;
 	const tabHost = getTabHost(tab.url);
 	if (!tab.title || !tabHost) return;
+
+	if (tab.title.startsWith(TITLE_PREFIX)) {
+		tab.title = tab.title.substring(TITLE_PREFIX.length);
+		browser.history.addUrl({ url: tab.url, title: tab.title });
+	} else {
+		await browser.scripting.executeScript({
+			target: { tabId },
+			args: [`${TITLE_PREFIX}${tab.title}`],
+			func: (/** @type {string} */ title) => {
+				document.title = title;
+			},
+		});
+	}
 
 	console.log("Using handler for " + tabHost);
 	const handler = SITE_HANDLERS[tabHost];
@@ -141,28 +212,3 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 		sendError("Error in desktop application: " + ret);
 	}
 }
-
-/*
- * SITE HANDLERS
- */
-
-/**
- * @callback TitleHandlerFunc
- * @param {string} pageTitle
- * @returns {?{title: string, artist?: string}}
- */
-
-/**
- * @type {Object.<string, TitleHandlerFunc>}
- */
-const SITE_HANDLERS = {
-	"spotify.com": (pageTitle) => {
-		const split = pageTitle.split(" • ");
-		if (split.length !== 2) return null;
-		return { title: split[0], artist: split[1] };
-	},
-	"youtube.com": (pageTitle) => {
-		if (!pageTitle.endsWith(" - YouTube")) return null;
-		return { title: pageTitle.substring(0, pageTitle.length - 10) };
-	},
-};
