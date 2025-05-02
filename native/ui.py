@@ -6,12 +6,14 @@ import threading
 import tkinter as tk
 import tkinter.filedialog as tkfd
 import tkinter.ttk as ttk
-from server import run_server
+from server import Server
 
+root = None
 var_format = None
 var_port = None
 var_url = None
 var_status = None
+var_running = None
 
 
 class EntryNumber(ttk.Entry):
@@ -29,7 +31,7 @@ class EntryNumber(ttk.Entry):
 
 
 def handle(config):
-	global var_format, var_port, var_url, var_status
+	global root, var_format, var_port, var_url, var_status, var_running
 
 	root = tk.Tk()
 	root.title("Now Playing Config")
@@ -39,6 +41,7 @@ def handle(config):
 
 	var_url = tk.StringVar(value="")
 	var_status = tk.StringVar(value="Server is offline.")
+	var_running = tk.BooleanVar(value=False)
 
 	frm_install = tk.LabelFrame(text="Install in Firefox", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
 	frm_install.columnconfigure(0, weight=1)
@@ -81,6 +84,7 @@ def handle(config):
 	etr_port.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
 	btn_serve = ttk.Button(master=frm_port, text="Start Server", command=click_serve)
 	btn_serve.pack(side=tk.LEFT, padx=5, fill=tk.X, expand=True)
+	var_running.trace('w', lambda _a, _b, _c : (btn_serve.state([tk.DISABLED if var_running.get() else tk.NORMAL])))
 	frm_port.grid(column=0, row=0, sticky="we")
 	frm_url = tk.Frame(master=frm_server)
 	lbl_url = ttk.Label(master=frm_url, text="URL")
@@ -155,8 +159,8 @@ def click_uninstall():
 
 def click_serve():
 	var_url.set("http://localhost:" + var_port.get() + "/nowplaying.html")
-	print("Starting server...")
-	thread = threading.Thread(target=run_server, args=(int(var_port.get()), ))
+	server = Server(root, var_status, var_running, int(var_port.get()))
+	thread = threading.Thread(target=server.run)
 	thread.setDaemon(True)
 	thread.start()
 
