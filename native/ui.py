@@ -1,6 +1,7 @@
 import json
 import os
 import pathlib
+import sys
 import tkinter as tk
 import tkinter.filedialog as tkfd
 import tkinter.ttk as ttk
@@ -92,13 +93,13 @@ def click_install():
 			winreg.CloseKey(registry)
 		else:
 			# Linux / MacOS
-			newjson["path"] = os.path.join(os.path.dirname(__file__), "main")
+			newjson["path"] = os.path.realpath(sys.argv[0])
 			with open(os.path.join(
 					pathlib.Path.home(), ".mozilla", "native-messaging-hosts", "be.suyo.firefox_nowplaying.json"
 				), "w") as jsonfile:
 				json.dump(newjson, jsonfile, indent="\t")
 		tk.messagebox.showinfo(title="Now Playing Config", message="Now Playing has been connected to Firefox!")
-	except e:
+	except Exception as e:
 		tk.messagebox.showerror(title="Now Playing Config", message="Failed to install:\n" + str(e))
 
 
@@ -119,7 +120,7 @@ def click_uninstall():
 					pathlib.Path.home(), ".mozilla", "native-messaging-hosts", "be.suyo.firefox_nowplaying.json"
 				))
 		tk.messagebox.showinfo(title="Now Playing Config", message="Now Playing has been disconnected from Firefox.")
-	except e:
+	except Exception as e:
 		tk.messagebox.showerror(title="Now Playing Config", message="Failed to uninstall:\n" + str(e))
 
 
