@@ -1,6 +1,29 @@
 /// <reference types="firefox-webext-browser"/>
 
-async function listen() {
+/*
+ * LISTENERS
+ */
+
+browser.action.onClicked.addListener(async () => {
+	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	console.log("Currently following.", followedTabId);
+	if (followedTabId !== null) stop();
+	else start();
+});
+
+browser.tabs.onRemoved.addListener(async (tabId) => {
+	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	console.log("Closed tab.", tabId, "Currently following.", followedTabId);
+	if (followedTabId === tabId) stop("The followed tab was closed");
+});
+
+browser.tabs.onUpdated.addListener(sendSongTitle);
+
+/*
+ * START / STOP
+ */
+
+async function start() {
 	try {
 		const tabs = await browser.tabs.query({ currentWindow: true, active: true });
 		console.log("Queried tabs.", tabs);
@@ -34,13 +57,20 @@ async function listen() {
 	}
 }
 
-async function unlisten() {
+/**
+ * @param {string | undefined} [reason]
+ */
+async function stop(reason) {
 	console.log(`Unsetting listening tab ID`);
 	await browser.storage.session.set({ tabId: null });
 	updateActionButton(false);
-	notify("Stopped.");
+	if (reason) notify(`Stopped (${reason}).`);
+	else notify("Stopped.");
 }
-// TODO stop extension if tab is closed
+
+/*
+ * NOTIFICATIONS / UI
+ */
 
 /**
  * @param {string} message
@@ -55,6 +85,14 @@ function notify(message) {
 }
 
 /**
+ * @param {string} message
+ */
+function sendError(message) {
+	console.error(message);
+	notify(`ERROR: ${message}`);
+}
+
+/**
  * @param {boolean} [listening]
  */
 function updateActionButton(listening) {
@@ -63,6 +101,10 @@ function updateActionButton(listening) {
 	browser.action.setBadgeTextColor({ color: "white" });
 	browser.action.setBadgeText({ text: listening ? "ON" : "" });
 }
+
+/*
+ * MESSAGING TO APP
+ */
 
 /**
  * @param {string} url
@@ -78,14 +120,17 @@ function getTabHost(url) {
  */
 async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (tabId != (await browser.storage.session.get({ tabId: null })).tabId) return;
-	console.log("Received tab update.", tab.url, tab.title);
-	if (!tab.url || !tab.title) return;
+	console.log("Received followed tab update.", tab.url, tab.title);
+	if (!tab.url) {
+		stop(`The followed tab left the page`);
+		return;
+	}
 	const tabHost = getTabHost(tab.url);
-	if (!tabHost) return;
+	if (!tab.title || !tabHost) return;
 
 	console.log("Using handler for " + tabHost);
 	const handler = SITE_HANDLERS[tabHost];
-	if (handler == null) sendError(`Now Playing does not support ${tabHost}.`); // TODO stop extension
+	if (handler == null) return;
 	const result = handler(tab.title);
 	if (result == null) return;
 
@@ -97,13 +142,9 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 	}
 }
 
-/**
- * @param {string} message
+/*
+ * SITE HANDLERS
  */
-function sendError(message) {
-	console.error(message);
-	notify(`ERROR: ${message}`);
-}
 
 /**
  * @callback TitleHandlerFunc
@@ -125,12 +166,3 @@ const SITE_HANDLERS = {
 		return { title: pageTitle.substring(0, pageTitle.length - 10) };
 	},
 };
-
-browser.action.onClicked.addListener(async () => {
-	const listeningTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	console.log("Currently listening to.", listeningTabId);
-	if (listeningTabId !== null) unlisten();
-	else listen();
-});
-
-browser.tabs.onUpdated.addListener(sendSongTitle, { urls: Object.keys(SITE_HANDLERS).map((k) => `*://*.${k}/*`) });
