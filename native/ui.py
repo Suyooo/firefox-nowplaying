@@ -104,6 +104,7 @@ def handle(config):
 	lbl_status.grid(column=0, columnspan=2, row=1, padx=5, sticky="we")
 	frm_server.pack(fill=tk.X, padx=10, pady=5)
 
+
 	btn_save = ttk.Button(text="Save Configuration", command=click_save)
 	btn_save.pack(fill=tk.X, padx=10, pady=10)
 
@@ -172,7 +173,8 @@ def click_serve():
 
 
 def click_copy():
-	print("TODO...")
+	root.clipboard_clear()
+	root.clipboard_append(var_url.get())
 
 
 def click_save():

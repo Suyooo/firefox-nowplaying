@@ -4,7 +4,7 @@
 			function update() {
 				fetch("nowplaying.txt", { cache: "no-store" })
 					.then((r) => r.text())
-					.then((t) => (document.getElementById("nowplaying").innerText = t))
+					.then((t) => (document.getElementById("nowplaying").innerHTML = t))
 					.finally(() => setTimeout(update, 1000));
 			}
 			update();
