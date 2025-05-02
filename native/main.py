@@ -10,6 +10,7 @@ from receiver import handle as receiver_handle
 if __name__ == '__main__':
 	config = {
 		"format": "{$title$}{$if_artist$ - $}{$artist$}",
+		"wrap_html": False,
 		"server_port": 8944,
 	}
 	if os.path.isfile(os.path.join(os.path.dirname(__file__), "settings.json")):

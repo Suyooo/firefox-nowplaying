@@ -10,6 +10,7 @@ from server import Server
 
 root = None
 var_format = None
+var_html = None
 var_port = None
 var_url = None
 var_status = None
@@ -31,12 +32,13 @@ class EntryNumber(ttk.Entry):
 
 
 def handle(config):
-	global root, var_format, var_port, var_url, var_status, var_running
+	global root, var_format, var_html, var_port, var_url, var_status, var_running
 
 	root = tk.Tk()
 	root.title("Now Playing Config")
 
 	var_format = tk.StringVar(value=config["format"])
+	var_html = tk.BooleanVar(value=config["wrap_html"])
 	var_port = tk.StringVar(value=config["server_port"])
 
 	var_url = tk.StringVar(value="")
@@ -55,6 +57,10 @@ def handle(config):
 	frm_output = tk.LabelFrame(text="Text Format", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
 	etr_format = ttk.Entry(master=frm_output, textvariable=var_format)
 	etr_format.pack(fill=tk.X, padx=5, pady=5)
+	chk_html = ttk.Checkbutton(
+			master=frm_output, text="Wrap output in HTML (recommended if you use Browser Source)", variable=var_html
+		)
+	chk_html.pack(fill=tk.X, padx=5, pady=5)
 	frm_help = tk.Frame(master=frm_output)
 	lbl_help_al = ttk.Label(master=frm_help, text="{$title$}", font=("monospace", 12, "bold"))
 	lbl_help_al.grid(column=0, row=0, padx=5, sticky="nw")
@@ -174,6 +180,7 @@ def click_save():
 		with open(os.path.join(os.path.dirname(__file__), "settings.json"), "w") as configfile:
 			json.dump({
 				"format": var_format.get(),
+				"wrap_html": var_html.get(),
 				"server_port": int(var_port.get()),
 			}, configfile, indent="\t")
 		tk.messagebox.showinfo(title="Now Playing Config", message="Configuration has been saved!")

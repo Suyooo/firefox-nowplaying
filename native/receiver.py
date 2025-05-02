@@ -1,3 +1,4 @@
+import html
 import json
 import os
 import re
@@ -20,8 +21,15 @@ def handle(config):
 	try:
 		msg = receive()
 		formatted = config["format"]
-		formatted = formatted.replace("{$title$}", msg["title"])
-		formatted = formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
+		if config["wrap_html"]:
+			formatted = formatted.replace("{$title$}", "<span id='title'>" + html.escape(msg["title"]) + "</span>")
+			formatted = formatted.replace(
+					"{$artist$}",
+					("<span id='artist'>" + html.escape(msg["artist"]) + "</span>") if "artist" in msg else ""
+				)
+		else:
+			formatted = formatted.replace("{$title$}", msg["title"])
+			formatted = formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if "artist" in msg else "", formatted)
 
 		with open(os.path.join(os.path.dirname(__file__), "nowplaying.txt"), "w") as outfile:
