@@ -44,6 +44,10 @@ browser.tabs.onRemoved.addListener(async (tabId) => {
 
 browser.tabs.onUpdated.addListener(sendSongTitle);
 
+browser.runtime.onMessage.addListener(() => {
+	stop("The followed tab left the page");
+});
+
 // Handle onUpdateAvailable to avoid restarts while the plugin is active. Only reload if the connection is stopped
 browser.runtime.onUpdateAvailable.addListener(async () => {
 	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
@@ -84,6 +88,15 @@ async function start() {
 		await browser.storage.session.set({ tabId: tab.id });
 		sendSongTitle(tab.id, null, tab);
 
+		await browser.scripting.executeScript({
+			target: { tabId: tab.id },
+			func: () => {
+				addEventListener("beforeunload", () => {
+					browser.runtime.sendMessage(0);
+				});
+			},
+		});
+
 		updateActionButton(true);
 		notify("Started, now following this tab.");
 	} catch (e) {
@@ -97,6 +110,7 @@ async function start() {
 async function stop(reason) {
 	/** @type {?number} */
 	const tabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	if (tabId === null) return;
 	console.log(`Unsetting listening tab ID`);
 	await browser.storage.session.set({ tabId: null });
 	updateActionButton(false);
@@ -166,8 +180,6 @@ function getTabHost(url) {
 	return new URL(url).host.split(".").slice(-2, 99).join(".");
 }
 
-let previousWasUnknown = false;
-
 /**
  * @param {number} tabId
  * @param {?browser.tabs._OnUpdatedChangeInfo} _changeInfo
@@ -176,20 +188,7 @@ let previousWasUnknown = false;
 async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (tabId != (await browser.storage.session.get({ tabId: null })).tabId) return;
 	console.log("Received followed tab update.", tab.url, tab.title);
-	if (!tab.url) {
-		// This potentially means we've lost the activeTab permission. Emphasis on "potentially".
-		// I guess the activeTab permission is careful as long as it's not sure it's staying on the same domain and
-		// sends an onUpdated event with the sensitive data missing even though we should get it, and only delivers
-		// it later. So, we only give up if we get two unknowns in a row.
-		if (previousWasUnknown) {
-			stop(`The followed tab left the page`);
-			previousWasUnknown = false;
-		} else {
-			previousWasUnknown = true;
-		}
-		return;
-	}
-	previousWasUnknown = false;
+	if (!tab.url) return;
 	const tabHost = getTabHost(tab.url);
 	if (!tab.title || !tabHost) return;
 
