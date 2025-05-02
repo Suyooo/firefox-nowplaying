@@ -2,9 +2,11 @@ import json
 import os
 import pathlib
 import sys
+import threading
 import tkinter as tk
 import tkinter.filedialog as tkfd
 import tkinter.ttk as ttk
+from server import run_server
 
 var_path = None
 var_html = None
@@ -68,6 +70,9 @@ def handle(config):
 	btn_save = ttk.Button(text="Save Configuration", command=click_save)
 	btn_save.pack(fill=tk.X, padx=10, pady=10)
 
+	btn_serve = ttk.Button(text="Serve Page", command=click_serve)
+	btn_serve.pack(fill=tk.X, padx=10, pady=10)
+
 	root.mainloop()
 
 
@@ -124,14 +129,11 @@ def click_uninstall():
 		tk.messagebox.showerror(title="Now Playing Config", message="Failed to uninstall:\n" + str(e))
 
 
-# def click_browse():
-# 	res = tkfd.asksaveasfilename(
-# 			initialfile=var_path.get() or ("nowplaying.html" if var_html.get() else "nowplaying.txt"),
-# 			defaultextension=".html" if var_html.get() else ".txt",
-# 			filetypes=[("HTML Document", "*.html") if var_html.get() else ("Text Document", "*.txt")]
-# 		)
-# 	if res:
-# 		var_path.set(res)
+def click_serve():
+	print("Starting server...")
+	thread = threading.Thread(target=run_server, args=(8944, ))
+	thread.setDaemon(True)
+	thread.start()
 
 
 def click_save():
