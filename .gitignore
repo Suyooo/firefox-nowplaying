@@ -3,6 +3,7 @@ node_modules
 
 native/__pycache__
 native/.venv
+native/firefox_connection.json
 native/error.txt
 native/nowplaying.html
 native/nowplaying.txt

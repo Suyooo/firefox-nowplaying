@@ -78,17 +78,27 @@ def click_install():
 		
 		if os.name == "nt":
 			# Windows
-			newjson["path"] = os.path.join(os.path.dirname(sys.argv[0]), "main.exe")
-			with open(os.path.join(os.path.dirname(sys.argv[0]), "be.suyo.firefox_nowplaying.json"), "w") as jsonfile:
+			script_path = os.path.realpath(sys.argv[0])
+			if script_path.endswith(".exe"):
+				newjson["path"] = script_path
+			else:
+				with open(script_path + ".bat", "w") as batchfile:
+					batchfile.write("@echo off\n")
+					batchfile.write(sys.executable)
+					batchfile.write(" ")
+					batchfile.write(script_path)
+					batchfile.write(" %0")
+				newjson["path"] = script_path + ".bat"
+			with open(os.path.join(os.path.dirname(sys.argv[0]), "firefox_connection.json"), "w") as jsonfile:
 				json.dump(newjson, jsonfile, indent="\t")
+			
 			import winreg
-			registry = winreg.OpenKey(
-					winreg.HKEY_CURRENT_USER, "Software\\Mozilla\\NativeMessagingHosts",
-					0, winreg.KEY_ALL_ACCESS | winreg.KEY_WOW64_64KEY
+			registry = winreg.CreateKey(
+					winreg.HKEY_CURRENT_USER, "Software\\Mozilla\\NativeMessagingHosts"
 				)
 			winreg.SetValue(
 					registry, "be.suyo.firefox_nowplaying", winreg.REG_SZ,
-					os.path.join(os.path.dirname(sys.argv[0]), "be.suyo.firefox_nowplaying.json")
+					os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), "firefox_connection.json")
 				)
 			winreg.CloseKey(registry)
 		else:
@@ -109,10 +119,9 @@ def click_uninstall():
 			# Windows
 			import winreg
 			registry = winreg.OpenKey(
-					winreg.HKEY_CURRENT_USER, "Software\\Mozilla\\NativeMessagingHosts",
-					0, winreg.KEY_ALL_ACCESS | winreg.KEY_WOW64_64KEY
+					winreg.HKEY_CURRENT_USER, "Software\\Mozilla\\NativeMessagingHosts", 0, winreg.KEY_WRITE
 				)
-			winreg.DeleteValue(registry, "be.suyo.firefox_nowplaying")
+			winreg.DeleteKey(registry, "be.suyo.firefox_nowplaying")
 			winreg.CloseKey(registry)
 		else:
 			# Linux / MacOS
