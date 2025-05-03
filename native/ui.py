@@ -33,12 +33,12 @@ def handle(config):
 
 	var_format = tk.StringVar(value=config["format"])
 
-	frm_install = tk.LabelFrame(text="Install in Firefox", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
+	frm_install = tk.LabelFrame(text="Connect to Firefox", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
 	frm_install.columnconfigure(0, weight=1)
 	frm_install.columnconfigure(1, weight=1)
-	btn_install = ttk.Button(master=frm_install, text="Install", command=click_install)
+	btn_install = ttk.Button(master=frm_install, text="Connect", command=click_install)
 	btn_install.grid(column=0, row=0, padx=5, sticky="we")
-	btn_uninstall = ttk.Button(master=frm_install, text="Uninstall", command=click_uninstall)
+	btn_uninstall = ttk.Button(master=frm_install, text="Disconnect", command=click_uninstall)
 	btn_uninstall.grid(column=1, row=0, padx=5, sticky="we")
 	frm_install.pack(fill=tk.X, padx=10, pady=5)
 
@@ -100,7 +100,7 @@ def click_install():
 				json.dump(newjson, jsonfile, indent="\t")
 		tk.messagebox.showinfo(title="Now Playing Config", message="Now Playing has been connected to Firefox!")
 	except Exception as e:
-		tk.messagebox.showerror(title="Now Playing Config", message="Failed to install:\n" + str(e))
+		tk.messagebox.showerror(title="Now Playing Config", message="Failed to connect:\n" + str(e))
 
 
 def click_uninstall():
@@ -121,7 +121,7 @@ def click_uninstall():
 				))
 		tk.messagebox.showinfo(title="Now Playing Config", message="Now Playing has been disconnected from Firefox.")
 	except Exception as e:
-		tk.messagebox.showerror(title="Now Playing Config", message="Failed to uninstall:\n" + str(e))
+		tk.messagebox.showerror(title="Now Playing Config", message="Failed to disconnect:\n" + str(e))
 
 
 def click_save():
