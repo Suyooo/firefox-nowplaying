@@ -1,3 +1,4 @@
+import importlib.resources
 import json
 import os
 import pathlib
@@ -72,7 +73,7 @@ def handle(config):
 
 def click_install():
 	try:
-		with open(os.path.join(os.path.dirname(__file__), "native-base.json"), "r") as jsonfile:
+		with importlib.resources.open_text(__name__, "native-base.json") as jsonfile:
 			newjson = json.load(jsonfile)
 		
 		if os.name == "nt":

@@ -10,9 +10,9 @@ fi
 ARCH=$(uname -m)
 FILE=nowplaying-linux-$LIBC-$ARCH
 
-mkdir -p dist && cd dist
-nuitka ../../native/__main__.py --onefile \
-	--include-module=receiver --include-module=server --include-module=ui \
-	--include-data-file=../../native/native-base.json=native-base.json \
-	--include-data-file=../../native/nowplaying-template.html=nowplaying-template.html \
+nuitka ../native/__main__.py --onefile \
+	--include-module=receiver --include-module=ui \
+	--include-data-file=../native/native-base.json=native-base.json \
+	--include-data-file=../native/nowplaying-template.html=nowplaying-template.html \
 	--output-filename=$FILE
+mkdir -p dist && mv $FILE dist

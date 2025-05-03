@@ -35,7 +35,7 @@ def handle(config):
 
 		with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt"), "w") as outfile:
 			outfile.write(raw_formatted)
-		with open(os.path.join(os.path.dirname(__file__), "nowplaying-template.html"), "r") as templfile:
+		with importlib.resources.open_text(__name__, "nowplaying-template.html") as templfile:
 			with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.html"), "w") as outfile:
 				outfile.write(templfile.read().replace("$FORMAT$", html_formatted))
 		send("1")

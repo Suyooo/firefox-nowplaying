@@ -14,14 +14,14 @@ Made primarily for streaming, so you can have a "Now Playing" overlay if you use
 Install the extension from the Firefox Addon store. (There'll be a link here once it's approved.)
 
 You also need to install a native application on your PC to allow the addon to store the file on your disk. Once you
-have it installed, you can use the configuration tool to change the text format and file location. Make sure to hit the
-"Install" button in the config tool to connect the application to Firefox!
+have it installed, you can use the configuration tool to connect or disconnect the application from Firefox and change
+the text format.
 
-#### Linux or Windows
+#### Via bundled executable (for x86 Linux and Windows)
 
 1. Head to the release page and download the latest executable for your OS
 1. Create a new folder in your favourite location and put the application in there
-1. Run the file to open the configuration tool and hit the "Install" button
+1. Launch the executable to open the configuration tool and hit the "Install" button
 
 #### Via .pyzw (for MacOS or other architectures)
 
@@ -33,7 +33,7 @@ test it there.
 1. Install `tkinter` (check your OS package manager for `python3-tk` or similar, on MacOS: `brew install python-tk`)
 1. Head to the release page and download the `.pyzw` release
 1. Create a new folder in your favourite location and put the application in there
-1. Open the `.pyzw` file or run `python3 nowplaying.pyzw` to open the configuration tool and hit the "Install" button
+1. Launch the `.pyzw` file to open the configuration tool and hit the "Install" button
 
 ## Usage
 

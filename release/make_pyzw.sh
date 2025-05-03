@@ -5,7 +5,7 @@ cd "$(dirname "$0")"
 mkdir -p dist
 rm -rf .pyzw-build && mkdir .pyzw-build
 cd ../native
-zip ../release/.pyzw-build/nowplaying.zip *.py
+zip ../release/.pyzw-build/nowplaying.zip *.py native-base.json nowplaying-template.html
 cd -
 echo "#!/usr/bin/env python3" > .pyzw-build/header
 cat .pyzw-build/header .pyzw-build/nowplaying.zip > dist/nowplaying.pyzw
