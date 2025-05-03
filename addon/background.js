@@ -36,12 +36,6 @@ browser.action.onClicked.addListener(async () => {
 	else start();
 });
 
-browser.tabs.onRemoved.addListener(async (tabId) => {
-	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	console.log("Closed tab.", tabId, "Currently following.", followedTabId);
-	if (followedTabId === tabId) stop("The followed tab was closed");
-});
-
 browser.tabs.onUpdated.addListener(sendSongTitle);
 
 browser.runtime.onMessage.addListener(() => {
