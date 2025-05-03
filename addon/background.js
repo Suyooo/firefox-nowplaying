@@ -187,9 +187,12 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (!tab.title || !tabHost) return;
 
 	if (tab.title.startsWith(TITLE_PREFIX)) {
+		console.log("Modifying history.");
 		tab.title = tab.title.substring(TITLE_PREFIX.length);
 		browser.history.addUrl({ url: tab.url, title: tab.title });
+		return;
 	} else {
+		console.log("Adding title to tab.");
 		await browser.scripting.executeScript({
 			target: { tabId },
 			args: [`${TITLE_PREFIX}${tab.title}`],
