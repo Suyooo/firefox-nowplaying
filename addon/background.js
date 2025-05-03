@@ -145,7 +145,7 @@ async function stop(reason) {
 function notify(message) {
 	browser.notifications.create({
 		type: "basic",
-		iconUrl: browser.runtime.getURL("icon.svg"),
+		iconUrl: browser.runtime.getURL("icon-notification.png"),
 		title: "Now Playing",
 		message,
 	});
