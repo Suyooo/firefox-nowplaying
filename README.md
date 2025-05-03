@@ -19,27 +19,29 @@ have it installed, you can use the configuration tool to change the text format 
 
 #### Linux or Windows
 
-1. Download the latest release and extract it in your favourite folder
-1. Run `nowplaying`/`nowplaying.exe` to open the configuration tool and hit the "Install" button
+1. Head to the release page and download the latest executable for your OS
+1. Create a new folder in your favourite location and put the application in there
+1. Run the file to open the configuration tool and hit the "Install" button
 
-#### Run directly (for MacOS or other architectures)
+#### Via .pyzw (for MacOS or other architectures)
 
-Instead of using the prepared releases, you can also directly run the scripts from this repository using a Python
-installed on your PC. This is what you might need to do on MacOS - I don't own any Macs, so I have no way to create
-prebundled releases for them or test it there. The Linux version might work if you have a Mac without an M-series chip
-(let me know if you try!), otherwise:
+Instead of using the prepared releases, you can also directly run the scripts using a Python installed on your PC. This
+is what you might need to do on MacOS - I don't own any Macs, so I have no way to create prebundled releases for them or
+test it there.
 
 1. Install Python 3 (on MacOS, try [Homebrew](https://brew.sh): `brew install python3`)
-1. Install requirements: `pip install tk`
-1. Download this repository to your favourite location
-1. Run `./native/main.py` to open the configuration tool and hit the "Install" button
+1. Install `tkinter` (check your OS package manager for `python3-tk` or similar, on MacOS: `brew install python-tk`)
+1. Head to the release page and download the `.pyzw` release
+1. Create a new folder in your favourite location and put the application in there
+1. Open the `.pyzw` file or run `python3 nowplaying.pyzw` to open the configuration tool and hit the "Install" button
 
 ## Usage
 
 Once you have installed the extension and connected the application, you can now click the extension icon in Firefox to
 start. The extension will be tracking the tab you activate it in - you can visit the same site in other tabs without
-affecting your Now Playing display. It will keep automatically updating the current song title until you close or
-refresh the tab.
+affecting your Now Playing display. It will keep automatically updating the current song title until you close the tab,
+refresh or leave the page. If it works, you should see two new files, `nowplaying.txt` and `nowplaying.html`, created in
+the same folder as the application.
 
 You have two ways of using this extension with OBS:
 

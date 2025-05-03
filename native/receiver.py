@@ -32,12 +32,12 @@ def handle(config):
 			formatted = formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if "artist" in msg else "", formatted)
 
-		with open(os.path.join(os.path.dirname(__file__), "nowplaying.txt"), "w") as outfile:
+		with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt"), "w") as outfile:
 			outfile.write(formatted)
 			outfile.write("\n")
 		send("1")
 	except Exception as e:
 		msg = str(e)
-		with open(os.path.join(os.path.dirname(__file__), "error.txt"), "w") as outfile:
+		with open(os.path.join(os.path.dirname(sys.argv[0]), "error.txt"), "w") as outfile:
 			outfile.write(msg)
 		send(msg)

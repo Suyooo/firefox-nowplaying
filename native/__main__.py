@@ -7,14 +7,14 @@ from ui import handle as ui_handle
 from receiver import handle as receiver_handle
 
 
-if __name__ == '__main__':
+def run():
 	config = {
 		"format": "{$title$}{$if_artist$ - $}{$artist$}",
 		"wrap_html": False,
 		"server_port": 8944,
 	}
-	if os.path.isfile(os.path.join(os.path.dirname(__file__), "settings.json")):
-		with open(os.path.join(os.path.dirname(__file__), "settings.json"), "r") as configfile:
+	if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "settings.json")):
+		with open(os.path.join(os.path.dirname(sys.argv[0]), "settings.json"), "r") as configfile:
 			try:
 				config = config | json.load(configfile)
 			except Exception:
@@ -26,3 +26,7 @@ if __name__ == '__main__':
 	else:
 		# Receiving data from Firefox
 		receiver_handle(config)
+
+
+if __name__ == '__main__':
+	run()

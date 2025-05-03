@@ -1,12 +1,12 @@
 import json
 import os
 import pathlib
-import sys
 import threading
 import tkinter as tk
 import tkinter.filedialog as tkfd
 import tkinter.ttk as ttk
 from server import Server
+import sys
 
 root = None
 var_format = None
@@ -113,13 +113,13 @@ def handle(config):
 
 def click_install():
 	try:
-		with open(os.path.join(os.path.dirname(__file__), "be.suyo.firefox_nowplaying.json.base"), "r") as jsonfile:
+		with open(os.path.join(os.path.dirname(__file__), "native-base.json"), "r") as jsonfile:
 			newjson = json.load(jsonfile)
 		
 		if os.name == "nt":
 			# Windows
-			newjson["path"] = os.path.join(os.path.dirname(__file__), "main.exe")
-			with open(os.path.join(os.path.dirname(__file__), "be.suyo.firefox_nowplaying.json"), "w") as jsonfile:
+			newjson["path"] = os.path.join(os.path.dirname(sys.argv[0]), "main.exe")
+			with open(os.path.join(os.path.dirname(sys.argv[0]), "be.suyo.firefox_nowplaying.json"), "w") as jsonfile:
 				json.dump(newjson, jsonfile, indent="\t")
 			import winreg
 			registry = winreg.OpenKey(
@@ -128,7 +128,7 @@ def click_install():
 				)
 			winreg.SetValue(
 					registry, "be.suyo.firefox_nowplaying", winreg.REG_SZ,
-					os.path.join(os.path.dirname(__file__), "be.suyo.firefox_nowplaying.json")
+					os.path.join(os.path.dirname(sys.argv[0]), "be.suyo.firefox_nowplaying.json")
 				)
 			winreg.CloseKey(registry)
 		else:
@@ -179,7 +179,7 @@ def click_copy():
 
 def click_save():
 	try:
-		with open(os.path.join(os.path.dirname(__file__), "settings.json"), "w") as configfile:
+		with open(os.path.join(os.path.dirname(sys.argv[0]), "settings.json"), "w") as configfile:
 			json.dump({
 				"format": var_format.get(),
 				"wrap_html": var_html.get(),

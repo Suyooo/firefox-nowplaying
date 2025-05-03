@@ -3,7 +3,5 @@
 	"description": "Now Playing",
 	"path": "",
 	"type": "stdio",
-	"allowed_extensions": [
-		"firefox-nowplaying@suyo.be"
-	]
+	"allowed_extensions": ["firefox-nowplaying@suyo.be"]
 }

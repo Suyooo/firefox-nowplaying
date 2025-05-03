@@ -1,6 +1,7 @@
 import functools
 import http.server
 import os
+import sys
 
 
 class Server:
@@ -13,7 +14,7 @@ class Server:
 	def run(self):
 		try:
 			self.var_running.set(True)
-			handler = functools.partial(Handler, directory=os.path.dirname(__file__))
+			handler = functools.partial(Handler, directory=os.path.dirname(sys.argv[0]))
 			httpd = http.server.HTTPServer(("localhost", self.port), handler, False)
 			
 			self.root.after(0, lambda : self.var_status.set("Starting server..."))

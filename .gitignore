@@ -4,3 +4,5 @@ native/.venv
 native/error.txt
 native/nowplaying.txt
 native/settings.json
+release/__main__.*
+release/dist
