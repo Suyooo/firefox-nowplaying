@@ -38,7 +38,7 @@ def handle(config):
 			outfile.write(raw_formatted)
 		with importlib.resources.open_text(__name__, "nowplaying-template.html") as templfile:
 			with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.html"), "w") as outfile:
-				outfile.write(templfile.read().replace("$FORMAT$", html_formatted))
+				outfile.write(templfile.read().replace("$FORMAT$", html_formatted).replace("$CSS$", config["css"]))
 		send("1")
 	except Exception as e:
 		msg = str(e)

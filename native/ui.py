@@ -4,14 +4,14 @@ import os
 import pathlib
 import tkinter as tk
 import tkinter.filedialog as tkfd
-import tkinter.ttk as ttk
 import sys
 
 root = None
 var_format = None
+txt_css = None
 
 
-class EntryNumber(ttk.Entry):
+class EntryNumber(tk.Entry):
 	def __init__(self, master=None, textvariable=None, **kwargs):
 		tk.Entry.__init__(self, master, textvariable=textvariable, **kwargs)
 		self.old_value = textvariable.get()
@@ -26,7 +26,7 @@ class EntryNumber(ttk.Entry):
 
 
 def handle(config):
-	global root, var_format, var_html, var_port, var_url, var_status, var_running
+	global root, var_format, txt_css
 
 	root = tk.Tk()
 	root.title("Now Playing Config")
@@ -36,36 +36,51 @@ def handle(config):
 	frm_install = tk.LabelFrame(text="Connect to Firefox", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
 	frm_install.columnconfigure(0, weight=1)
 	frm_install.columnconfigure(1, weight=1)
-	btn_install = ttk.Button(master=frm_install, text="Connect", command=click_install)
+	btn_install = tk.Button(master=frm_install, text="Connect", command=click_install)
 	btn_install.grid(column=0, row=0, padx=5, sticky="we")
-	btn_uninstall = ttk.Button(master=frm_install, text="Disconnect", command=click_uninstall)
+	btn_uninstall = tk.Button(master=frm_install, text="Disconnect", command=click_uninstall)
 	btn_uninstall.grid(column=1, row=0, padx=5, sticky="we")
 	frm_install.pack(fill=tk.X, padx=10, pady=5)
 
 	frm_output = tk.LabelFrame(text="Text Format", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
-	etr_format = ttk.Entry(master=frm_output, textvariable=var_format)
+	etr_format = tk.Entry(master=frm_output, textvariable=var_format)
 	etr_format.pack(fill=tk.X, padx=5, pady=5)
 	frm_help = tk.Frame(master=frm_output)
-	lbl_help_al = ttk.Label(master=frm_help, text="{$title$}", font=("monospace", 12, "bold"))
+	lbl_help_al = tk.Label(master=frm_help, text="{$title$}", font=("monospace", 12, "bold"))
 	lbl_help_al.grid(column=0, row=0, padx=5, sticky="nw")
-	lbl_help_ar = ttk.Label(master=frm_help, text="The current song's title.")
+	lbl_help_ar = tk.Label(master=frm_help, text="The current song's title.")
 	lbl_help_ar.grid(column=1, row=0, padx=5, sticky="nw")
-	lbl_help_bl = ttk.Label(master=frm_help, text="{$artist$}", font=("monospace", 12, "bold"))
+	lbl_help_bl = tk.Label(master=frm_help, text="{$artist$}", font=("monospace", 12, "bold"))
 	lbl_help_bl.grid(column=0, row=1, padx=5, sticky="nw")
-	lbl_help_br = ttk.Label(master=frm_help, text="The current song's artist, can be empty.")
+	lbl_help_br = tk.Label(master=frm_help, text="The current song's artist, can be empty.")
 	lbl_help_br.grid(column=1, row=1, padx=5, sticky="nw")
-	lbl_help_cl = ttk.Label(master=frm_help, text="{$if_artist$...$}", font=("monospace", 12, "bold"))
+	lbl_help_cl = tk.Label(master=frm_help, text="{$if_artist$...$}", font=("monospace", 12, "bold"))
 	lbl_help_cl.grid(column=0, row=2, padx=5, sticky="nw")
-	lbl_help_cr = ttk.Label(
-			master=frm_help, wraplength=500,
+	lbl_help_cr = tk.Label(
+			master=frm_help, wraplength=500, justify=tk.LEFT, anchor="w",
 			text="If the current song has an artist defined, this is replaced with whatever you write in for ... - otherwise, it gets removed. Use this for seperators between title and artist."
 		)
 	lbl_help_cr.grid(column=1, row=2, padx=5, sticky="nw")
 	frm_help.pack(fill=tk.X, pady=5)
 	frm_output.pack(fill=tk.X, padx=10, pady=5)
 
+	frm_style = tk.LabelFrame(text="CSS Styling", relief=tk.GROOVE, borderwidth=1, padx=10, pady=5)
+	lbl_help_style = tk.Label(
+			master=frm_style, wraplength=700, justify=tk.LEFT, anchor="w",
+			text="Enter CSS here to insert into the HTML output file. You can use the #nowplaying selector to style the container surrounding everything, and the #title and #artist selectors to style just those parts."
+		)
+	lbl_help_style.pack(fill=tk.X, padx=5)
+	frm_css = tk.Frame(master=frm_style)
+	txt_css = tk.Text(master=frm_css, height=10, wrap="word")
+	txt_css.insert("1.0", config["css"])
+	scr_css = tk.Scrollbar(master=frm_css, orient="vertical", command=txt_css.yview)
+	txt_css["yscrollcommand"] = scr_css.set
+	txt_css.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+	scr_css.pack(side=tk.LEFT, fill=tk.Y)
+	frm_css.pack(fill=tk.X, padx=5, pady=5)
+	frm_style.pack(fill=tk.X, padx=10, pady=5)
 
-	btn_save = ttk.Button(text="Save Configuration", command=click_save)
+	btn_save = tk.Button(text="Save Configuration", command=click_save)
 	btn_save.pack(fill=tk.X, padx=10, pady=10)
 
 	root.mainloop()
@@ -138,6 +153,7 @@ def click_save():
 		with open(os.path.join(os.path.dirname(sys.argv[0]), "settings.json"), "w") as configfile:
 			json.dump({
 				"format": var_format.get(),
+				"css": txt_css.get("1.0", "end"),
 			}, configfile, indent="\t")
 		tk.messagebox.showinfo(title="Now Playing Config", message="Configuration has been saved!")
 	except Exception as e:

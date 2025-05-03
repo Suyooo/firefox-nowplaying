@@ -10,8 +10,7 @@ from receiver import handle as receiver_handle
 def run():
 	config = {
 		"format": "{$title$}{$if_artist$ - $}{$artist$}",
-		"wrap_html": False,
-		"server_port": 8944,
+		"css": "#nowplaying {\n\tfont-family: sans-serif;\n}",
 	}
 	if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "settings.json")):
 		with open(os.path.join(os.path.dirname(sys.argv[0]), "settings.json"), "r") as configfile:

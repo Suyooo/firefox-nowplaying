@@ -59,9 +59,16 @@ your stream!
 If you'd like to be more flexible with styling, you can use a Browser source to display the `nowplaying.html` file.
 Create a Browser source in OBS, check "Local File", and choose the HTML file in the application's folder.
 
-You can now use the "Custom CSS" option of the Browser source to fully style the overlay as you want, by writing CSS
-rules for the `#nowplaying`, `#title` and `#artist` selectors. Here's the CSS used for the example screenshots at the
-top, to give you a start:
+You can now use the CSS field in the configuration tool to fully style the overlay however you want, by writing CSS
+rules for the `#nowplaying` selector to style the container around all of the text, and `#title` and `#artist` selectors
+to style just those values. Note that the HTML file won't update until the song changes while the Firefox extension is
+active!
+
+Be warned that the "Custom CSS" option in the Browser source might lead to flickering, since that CSS block is loaded
+with a slight delay after each refresh. But you can still use it for just trying out styles, and then simply copy it
+into the configuration tool to properly set the CSS up.
+
+Here's the CSS used for the example screenshots at the top, to give you a start:
 
 ```css
 /* Text Format: "🎜 {$title$}{$if_artist$ - $}{$artist$}" */
