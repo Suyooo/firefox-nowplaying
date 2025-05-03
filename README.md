@@ -39,7 +39,9 @@ test it there.
 
 Once you have installed the extension and connected the application, you can now click the extension icon in Firefox to
 start. The extension will be tracking the tab you activate it in - you can visit the same site in other tabs without
-affecting your Now Playing display. It will keep automatically updating the current song title until you close the tab,
+affecting your Now Playing display.
+
+It will keep automatically updating the current song title until you click the extension icon again, close the tab,
 refresh or leave the page. If it works, you should see two new files, `nowplaying.txt` and `nowplaying.html`, created in
 the same folder as the application.
 
@@ -51,20 +53,10 @@ When creating a Text source in OBS, you can choose to load text from a text file
 created in the desktop application's folder, then style the Text source as usual, and you have an auto-updating song
 title for your stream!
 
-The advantage for this is that after setting up the desktop application, you don't need to worry about the configuration
-anymore. Whenever you activate the extension from now on, it'll start updating OBS right away. However, you are limited
-to the styling options the Text source gives you.
-
 ### Browser Source
 
-If you'd like to be more flexible with styling, you can use the desktop application to serve up a page to use with a
-browser source. Open the configuration like before, then click "Start Server". If you get any firewall warnings, make
-sure to allow the server.
+If you'd like to be more flexible with styling, you can use a Browser source to display the `nowplaying.html` file.
+Create a Browser source in OBS, check "Local File", and choose the HTML file in the application's folder.
 
-Create a Browser source in OBS, and use the URL shown in the configuration tool. It's important to keep the window open! (Minimizing is fine, just don't close the configuration tool while you are streaming.) If successful, you should now be
-able to see your (unstyled) song title on your stream preview.
-
-You'll have to remember to start the configuration tool every time before you stream, the extension does not work by
-itself as it does with the Text source approach. However, you can use the "Custom CSS" option of the Browser source to
-fully style the overlay as you want, by writing CSS rules for the `#nowplaying` selector (also `#title` and `#artist` if
-you enable the "Wrap output in HTML" setting). Here's some examples:
+You can now use the "Custom CSS" option of the Browser source to fully style the overlay as you want, by writing CSS
+rules for the `#nowplaying`, `#title` and `#artist` selectors. Here's some examples:

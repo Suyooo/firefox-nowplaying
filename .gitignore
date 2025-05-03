@@ -2,6 +2,7 @@ node_modules
 native/__pycache__
 native/.venv
 native/error.txt
+native/nowplaying.html
 native/nowplaying.txt
 native/settings.json
 release/__main__.*

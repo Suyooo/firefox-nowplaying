@@ -20,21 +20,24 @@ def send(msg):
 def handle(config):
 	try:
 		msg = receive()
-		formatted = config["format"]
-		if config["wrap_html"]:
-			formatted = formatted.replace("{$title$}", "<span id='title'>" + html.escape(msg["title"]) + "</span>")
-			formatted = formatted.replace(
-					"{$artist$}",
-					("<span id='artist'>" + html.escape(msg["artist"]) + "</span>") if "artist" in msg else ""
-				)
-		else:
-			formatted = formatted.replace("{$title$}", msg["title"])
-			formatted = formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
+		formatted = html.escape(config["format"])
+
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if "artist" in msg else "", formatted)
 
+		raw_formatted = formatted.replace("{$title$}", msg["title"])
+		raw_formatted = raw_formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
+
+		html_formatted = formatted.replace("{$title$}", '<span id="title">' + html.escape(msg["title"]) + "</span>")
+		html_formatted = html_formatted.replace(
+				"{$artist$}",
+				('<span id="artist">' + html.escape(msg["artist"]) + "</span>") if "artist" in msg else ""
+			)
+
 		with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt"), "w") as outfile:
-			outfile.write(formatted)
-			outfile.write("\n")
+			outfile.write(raw_formatted)
+		with open(os.path.join(os.path.dirname(__file__), "nowplaying-template.html"), "r") as templfile:
+			with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.html"), "w") as outfile:
+				outfile.write(templfile.read().replace("$FORMAT$", html_formatted))
 		send("1")
 	except Exception as e:
 		msg = str(e)
