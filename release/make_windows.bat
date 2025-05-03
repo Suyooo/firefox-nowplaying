@@ -10,6 +10,8 @@ py -m nuitka ../native/__main__.py --msvc=latest --onefile --enable-plugin=tk-in
 	--include-module=receiver --include-module=ui ^
 	--include-data-file=../native/native-base.json=ui/native-base.json ^
 	--include-data-file=../native/nowplaying-template.html=receiver/nowplaying-template.html ^
-	--windows-console-mode=attach --output-filename=%_FILE_%
+	"--product-name=Now Playing" --file-version=1.0.0 --file-description=https://github.com/Suyooo/firefox-nowplaying ^
+	--windows-console-mode=attach --windows-icon-from-ico=../addon/icon-notification.png ^
+	--output-filename=%_FILE_%
 if not exist dist mkdir dist
 move %_FILE_% dist
