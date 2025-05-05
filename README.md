@@ -42,12 +42,17 @@ for them or test it there. If you're giving it a try on MacOS, let me know wheth
 
 Once you have installed the extension and connected the application, you can now click the extension icon in Firefox to
 start. The extension will be tracking the tab you activate it in - you can visit the same site in other tabs without
-affecting your Now Playing display. It will keep automatically updating the current song title until you click the
-extension icon again, close the tab, refresh or leave the page.
+affecting your Now Playing display.
 
-If it everything is set up correctly, you should see two new files, `nowplaying.txt` and `nowplaying.html`, created in
-the same folder as the application. From now on, all you need to do to start using your Now Playing overlay is click the
-extension icon - no need to start a background app or update configuration, just the addon is enough!
+While active, the extension icon will have a badge added. If the badge is red, it means you are currently on the tab
+that is being followed. The addon will keep automatically updating the current song title until you click the extension
+icon again, close the tab, refresh or leave the page. If the badge is white instead of red, that means the extension is
+active in another tab - click the icon to go to the followed tab.
+
+Try playing a song or video - if it everything is set up correctly, you should see two new files, `nowplaying.txt` and
+`nowplaying.html`, created in the same folder as the application. From now on, all you need to do to start using your
+Now Playing overlay is click the extension icon - no need to start a application in the background or update the
+configuration, just the browser is enough!
 
 You have two ways of using this extension with OBS:
 

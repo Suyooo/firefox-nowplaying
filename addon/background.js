@@ -31,15 +31,33 @@ const SITE_HANDLERS = {
 
 browser.action.onClicked.addListener(async () => {
 	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	console.log("Currently following.", followedTabId);
-	if (followedTabId !== null) stop();
-	else start();
+	const currentTabsQuery = await browser.tabs.query({ currentWindow: true, active: true });
+	console.log("Queried tabs.", currentTabsQuery);
+	if (!currentTabsQuery || !currentTabsQuery[0]) {
+		sendError("Unknown error trying to find your current tab.");
+		return;
+	}
+	const currentTab = currentTabsQuery[0];
+
+	console.log("Currently following.", followedTabId, "Currently focused.", currentTab.id);
+	if (followedTabId !== null) {
+		if (currentTab.id === followedTabId) {
+			stop(currentTab);
+		} else if (currentTab.id) {
+			const followedTab = await browser.tabs.get(followedTabId);
+			if (followedTab?.id) browser.tabs.update(followedTab.id, { active: true });
+		}
+	} else {
+		start(currentTab);
+	}
 });
 
 browser.tabs.onUpdated.addListener(sendSongTitle);
 
-browser.runtime.onMessage.addListener(() => {
-	stop("The followed tab left the page");
+browser.runtime.onMessage.addListener(async () => {
+	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	const followedTab = await browser.tabs.get(followedTabId);
+	stop(followedTab, "The followed tab left the page");
 });
 
 // Handle onUpdateAvailable to avoid restarts while the plugin is active. Only reload if the connection is stopped
@@ -53,18 +71,12 @@ browser.runtime.onUpdateAvailable.addListener(async () => {
  * START / STOP
  */
 
-const TITLE_PREFIX = "🔴 NP | ";
-
-async function start() {
+/**
+ * @param {browser.tabs.Tab} tab
+ */
+async function start(tab) {
 	try {
-		const tabs = await browser.tabs.query({ currentWindow: true, active: true });
-		console.log("Queried tabs.", tabs);
-		if (!tabs || !tabs[0]) {
-			sendError("Unknown error trying to find your current tab.");
-			return;
-		}
-		const tab = tabs[0];
-		if (!tab.url || !tab.title || !tab.id) {
+		if (!tab || !tab.url || !tab.title || !tab.id) {
 			sendError("No website loaded in this tab.");
 			return;
 		}
@@ -91,39 +103,24 @@ async function start() {
 			},
 		});
 
-		updateActionButton(true);
 		notify("Started, now following this tab.");
+		updateActionButton(true, tab.id);
 	} catch (e) {
 		sendError(e.message);
 	}
 }
 
 /**
- * @param {string | undefined} [reason]
+ * @param {browser.tabs.Tab} tab
+ * @param {?string} reason
  */
-async function stop(reason) {
+async function stop(tab, reason = null) {
 	/** @type {?number} */
 	const tabId = (await browser.storage.session.get({ tabId: null })).tabId;
 	if (tabId === null) return;
 	console.log(`Unsetting listening tab ID`);
 	await browser.storage.session.set({ tabId: null });
-	updateActionButton(false);
-
-	if (tabId) {
-		try {
-			await browser.scripting.executeScript({
-				target: { tabId },
-				args: [TITLE_PREFIX],
-				func: (/** @type {string} */ tp) => {
-					if (document.title.startsWith(tp)) {
-						document.title = document.title.substring(tp.length);
-					}
-				},
-			});
-		} catch (e) {
-			// Ignore error - the tab might have been closed so it doesn't exist anymore
-		}
-	}
+	if (tab.id) updateActionButton(false, tab.id);
 
 	if (reason) notify(`Stopped (${reason}).`);
 	else notify("Stopped.");
@@ -154,13 +151,23 @@ function sendError(message) {
 }
 
 /**
- * @param {boolean} [listening]
+ * @param {boolean} listening
+ * @param {number} tabId
  */
-function updateActionButton(listening) {
-	browser.action.setTitle({ title: listening ? "Stop Now Playing" : "Start Now Playing" });
-	browser.action.setBadgeBackgroundColor({ color: "red" });
-	browser.action.setBadgeTextColor({ color: "white" });
-	browser.action.setBadgeText({ text: listening ? "ON" : "" });
+function updateActionButton(listening, tabId) {
+	if (!listening) {
+		browser.action.setTitle({ title: "Start Now Playing" });
+		browser.action.setBadgeBackgroundColor({ color: null, tabId });
+		browser.action.setBadgeTextColor({ color: null, tabId });
+		browser.action.setBadgeText({ text: "" });
+	} else {
+		browser.action.setTitle({ title: "Stop Now Playing" });
+		browser.action.setBadgeBackgroundColor({ color: "white" });
+		browser.action.setBadgeTextColor({ color: "black" });
+		browser.action.setBadgeBackgroundColor({ color: "red", tabId });
+		browser.action.setBadgeTextColor({ color: "white", tabId });
+		browser.action.setBadgeText({ text: "ON" });
+	}
 }
 
 /*
@@ -185,22 +192,6 @@ async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (!tab.url) return;
 	const tabHost = getTabHost(tab.url);
 	if (!tab.title || !tabHost) return;
-
-	if (tab.title.startsWith(TITLE_PREFIX)) {
-		console.log("Modifying history.");
-		tab.title = tab.title.substring(TITLE_PREFIX.length);
-		browser.history.addUrl({ url: tab.url, title: tab.title });
-		return;
-	} else {
-		console.log("Adding title to tab.");
-		await browser.scripting.executeScript({
-			target: { tabId },
-			args: [`${TITLE_PREFIX}${tab.title}`],
-			func: (/** @type {string} */ title) => {
-				document.title = title;
-			},
-		});
-	}
 
 	console.log("Using handler for " + tabHost);
 	const handler = SITE_HANDLERS[tabHost];

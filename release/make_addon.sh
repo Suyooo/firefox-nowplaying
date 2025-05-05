@@ -3,4 +3,4 @@ set -euxo pipefail
 cd "$(dirname "$0")"
 
 cd ../addon
-zip ../release/dist/nowplaying-firefox.zip *
+zip ../release/dist/nowplaying-extension.zip *
