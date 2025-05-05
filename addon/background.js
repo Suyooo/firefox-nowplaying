@@ -42,7 +42,7 @@ browser.action.onClicked.addListener(async () => {
 	console.log("Currently tracking.", trackedTabId, "Currently focused.", currentTab.id);
 	if (trackedTabId !== null) {
 		if (currentTab.id === trackedTabId) {
-			stop(currentTab);
+			stop(trackedTabId);
 		} else if (currentTab.id) {
 			const trackedTab = await browser.tabs.get(trackedTabId);
 			if (trackedTab?.id) browser.tabs.update(trackedTab.id, { active: true });
@@ -52,16 +52,15 @@ browser.action.onClicked.addListener(async () => {
 	}
 });
 
-browser.tabs.onUpdated.addListener(sendSongTitle);
+browser.tabs.onUpdated.addListener(sendSongTitle, { urls: ["<all_urls>"] });
 
 // Currently only used for notifying the background script of unload events, so no further checks needed
 browser.runtime.onMessage.addListener(async () => {
 	const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	const trackedTab = await browser.tabs.get(trackedTabId);
-	stop(trackedTab, "The tracked tab left the page");
+	stop(trackedTabId, "The tracked tab left the page");
 });
 
-// Handle onUpdateAvailable to avoid restarts while the plugin is active. Only reload if the connection is stopped
+// Handle onUpdateAvailable to avoid restarts while the extension is active. Only reload if no tab is tracked
 browser.runtime.onUpdateAvailable.addListener(async () => {
 	const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
 	console.log("Update available, currently tracking.", trackedTabId);
@@ -91,7 +90,7 @@ async function start(tab) {
 			return;
 		}
 
-		console.log(`Setting listening tab ID to #${tab.id}`);
+		console.log(`Setting tracked tab ID to #${tab.id}`);
 		await browser.storage.session.set({ tabId: tab.id });
 		sendSongTitle(tab.id, null, tab);
 
@@ -112,16 +111,14 @@ async function start(tab) {
 }
 
 /**
- * @param {browser.tabs.Tab} tab
+ * @param {number} tabId
  * @param {?string} reason
  */
-async function stop(tab, reason = null) {
-	/** @type {?number} */
-	const tabId = (await browser.storage.session.get({ tabId: null })).tabId;
+async function stop(tabId, reason = null) {
 	if (tabId === null) return;
-	console.log(`Unsetting listening tab ID`);
+	console.log(`Unsetting tracked tab ID`);
 	await browser.storage.session.set({ tabId: null });
-	if (tab.id) updateActionButton(false, tab.id);
+	updateActionButton(false, tabId);
 
 	if (reason) notify(`Stopped (${reason}).`);
 	else notify("Stopped.");
@@ -152,14 +149,15 @@ function sendError(message) {
 }
 
 /**
- * @param {boolean} listening
+ * @param {boolean} active
  * @param {number} tabId
  */
-function updateActionButton(listening, tabId) {
-	if (!listening) {
+function updateActionButton(active, tabId) {
+	if (!active) {
 		browser.action.setTitle({ title: "Start Now Playing" });
-		browser.action.setBadgeBackgroundColor({ color: null, tabId });
-		browser.action.setBadgeTextColor({ color: null, tabId });
+		// These will fail if the tab was closed. Ignore.
+		browser.action.setBadgeBackgroundColor({ color: null, tabId }).catch(() => null);
+		browser.action.setBadgeTextColor({ color: null, tabId }).catch(() => null);
 		browser.action.setBadgeText({ text: "" });
 	} else {
 		browser.action.setTitle({ title: "Stop Now Playing" });
