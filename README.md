@@ -45,9 +45,9 @@ start. The extension will be tracking the tab you activate it in - you can visit
 affecting your Now Playing display.
 
 While active, the extension icon will have a badge added. If the badge is red, it means you are currently on the tab
-that is being followed. The addon will keep automatically updating the current song title until you click the extension
+that is being tracked. The addon will keep automatically updating the current song title until you click the extension
 icon again, close the tab, refresh or leave the page. If the badge is white instead of red, that means the extension is
-active in another tab - click the icon to go to the followed tab.
+active in another tab - click the icon to go to the tracked tab.
 
 Try playing a song or video - if it everything is set up correctly, you should see two new files, `nowplaying.txt` and
 `nowplaying.html`, created in the same folder as the application. From now on, all you need to do to start using your

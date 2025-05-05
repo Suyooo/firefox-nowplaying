@@ -30,7 +30,7 @@ const SITE_HANDLERS = {
  */
 
 browser.action.onClicked.addListener(async () => {
-	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
 	const currentTabsQuery = await browser.tabs.query({ currentWindow: true, active: true });
 	console.log("Queried tabs.", currentTabsQuery);
 	if (!currentTabsQuery || !currentTabsQuery[0]) {
@@ -39,13 +39,13 @@ browser.action.onClicked.addListener(async () => {
 	}
 	const currentTab = currentTabsQuery[0];
 
-	console.log("Currently following.", followedTabId, "Currently focused.", currentTab.id);
-	if (followedTabId !== null) {
-		if (currentTab.id === followedTabId) {
+	console.log("Currently tracking.", trackedTabId, "Currently focused.", currentTab.id);
+	if (trackedTabId !== null) {
+		if (currentTab.id === trackedTabId) {
 			stop(currentTab);
 		} else if (currentTab.id) {
-			const followedTab = await browser.tabs.get(followedTabId);
-			if (followedTab?.id) browser.tabs.update(followedTab.id, { active: true });
+			const trackedTab = await browser.tabs.get(trackedTabId);
+			if (trackedTab?.id) browser.tabs.update(trackedTab.id, { active: true });
 		}
 	} else {
 		start(currentTab);
@@ -54,17 +54,18 @@ browser.action.onClicked.addListener(async () => {
 
 browser.tabs.onUpdated.addListener(sendSongTitle);
 
+// Currently only used for notifying the background script of unload events, so no further checks needed
 browser.runtime.onMessage.addListener(async () => {
-	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	const followedTab = await browser.tabs.get(followedTabId);
-	stop(followedTab, "The followed tab left the page");
+	const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	const trackedTab = await browser.tabs.get(trackedTabId);
+	stop(trackedTab, "The tracked tab left the page");
 });
 
 // Handle onUpdateAvailable to avoid restarts while the plugin is active. Only reload if the connection is stopped
 browser.runtime.onUpdateAvailable.addListener(async () => {
-	const followedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	console.log("Update available, currently following.", followedTabId);
-	if (followedTabId === null) browser.runtime.reload();
+	const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+	console.log("Update available, currently tracking.", trackedTabId);
+	if (trackedTabId === null) browser.runtime.reload();
 });
 
 /*
@@ -103,7 +104,7 @@ async function start(tab) {
 			},
 		});
 
-		notify("Started, now following this tab.");
+		notify("Started, now tracking this tab.");
 		updateActionButton(true, tab.id);
 	} catch (e) {
 		sendError(e.message);
@@ -188,7 +189,7 @@ function getTabHost(url) {
  */
 async function sendSongTitle(tabId, _changeInfo, tab) {
 	if (tabId != (await browser.storage.session.get({ tabId: null })).tabId) return;
-	console.log("Received followed tab update.", tab.url, tab.title);
+	console.log("Received tracked tab update.", tab.url, tab.title);
 	if (!tab.url) return;
 	const tabHost = getTabHost(tab.url);
 	if (!tab.title || !tabHost) return;
