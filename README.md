@@ -6,10 +6,8 @@ Made primarily for streaming, so you can have a "Now Playing" overlay if you use
 
 ![Example screenshot of two stream overlays that can be created in OBS using this extension](example.png?raw=true)
 
-## Currently Supported Sites
-
-- YouTube
-- Spotify
+Any sites that use MediaMetadata will work with this extension. This includes, for example, YouTube, Spotify and
+Soundcloud.
 
 ## Installation
 
@@ -50,9 +48,11 @@ icon again, close the tab, refresh or leave the page. If the badge is white inst
 active in another tab - click the icon to go to the tracked tab.
 
 Try playing a song or video - if it everything is set up correctly, you should see two new files, `nowplaying.txt` and
-`nowplaying.html`, created in the same folder as the application. From now on, all you need to do to start using your
-Now Playing overlay is click the extension icon - no need to start a application in the background or update the
-configuration, just the browser is enough!
+`nowplaying.html`, created in the same folder as the application. If nothing happens, the site you use might not support
+MediaMetadata, so try one of the sites mentioned above to test.
+
+From now on, all you need to do to start using your Now Playing overlay is click the extension icon - no need to start
+an application in the background or update the configuration, just the browser is enough!
 
 You have two ways of using this extension with OBS:
 
@@ -68,9 +68,8 @@ If you'd like to be more flexible with styling, you can use a Browser source to 
 Create a Browser source in OBS, check "Local File", and choose the HTML file in the application's folder.
 
 You can now use the CSS field in the configuration tool to fully style the overlay however you want, by writing CSS
-rules for the `#nowplaying` selector to style the container around all of the text, and `#title` and `#artist` selectors
-to style just those values. Note that the HTML file won't update until the song changes while the Firefox extension is
-active!
+rules for the `#nowplaying` selector to style the container around all of the text, the `#title`, `#artist` and `#album` selectors to style just those values, and the `#artwork` selector to position the cover art. Note that the HTML file
+won't update until the song changes while the Firefox extension is active!
 
 Be warned that the "Custom CSS" option in the Browser source might lead to flickering, since that CSS block is loaded
 with a slight delay after each refresh. But you can still use it for just trying out styles, and then simply copy it
@@ -92,9 +91,10 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 ```
 
 ```css
-/* Text Format: "{$title$}{$artist$}" */
+/* Text Format: "{$title$}{$artist$}{$artwork$}" */
 
 #nowplaying {
+	position: relative;
 	width: 300px;
 	display: flex;
 	flex-direction: column;
@@ -122,5 +122,12 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 #artist {
 	color: #007777;
 	font-size: 14px;
+}
+
+#artwork {
+	position: absolute;
+	right: 4px;
+	height: 62px;
+	border-radius: 12px;
 }
 ```
