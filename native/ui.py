@@ -46,21 +46,22 @@ def handle(config):
 	etr_format = tk.Entry(master=frm_output, textvariable=var_format)
 	etr_format.pack(fill=tk.X, padx=5, pady=5)
 	frm_help = tk.Frame(master=frm_output)
-	lbl_help_al = tk.Label(master=frm_help, text="{$title$}", font=("monospace", 12, "bold"))
-	lbl_help_al.grid(column=0, row=0, padx=5, sticky="nw")
-	lbl_help_ar = tk.Label(master=frm_help, text="The current song's title.")
-	lbl_help_ar.grid(column=1, row=0, padx=5, sticky="nw")
-	lbl_help_bl = tk.Label(master=frm_help, text="{$artist$}", font=("monospace", 12, "bold"))
-	lbl_help_bl.grid(column=0, row=1, padx=5, sticky="nw")
-	lbl_help_br = tk.Label(master=frm_help, text="The current song's artist, can be empty.")
-	lbl_help_br.grid(column=1, row=1, padx=5, sticky="nw")
-	lbl_help_cl = tk.Label(master=frm_help, text="{$if_artist$...$}", font=("monospace", 12, "bold"))
-	lbl_help_cl.grid(column=0, row=2, padx=5, sticky="nw")
-	lbl_help_cr = tk.Label(
-			master=frm_help, wraplength=500, justify=tk.LEFT, anchor="w",
-			text="If the current song has an artist defined, this is replaced with whatever you write in for ... - otherwise, it gets removed. Use this for seperators between title and artist."
-		)
-	lbl_help_cr.grid(column=1, row=2, padx=5, sticky="nw")
+
+	i = 0
+	def add_help(left, right):
+		nonlocal i
+		lbl_help_l = tk.Label(master=frm_help, text=left, font=("monospace", 12, "bold"))
+		lbl_help_l.grid(column=0, row=i, padx=5, sticky="nw")
+		lbl_help_r = tk.Label(master=frm_help, wraplength=500, justify=tk.LEFT, anchor="w", text=right)
+		lbl_help_r.grid(column=1, row=i, padx=5, sticky="nw")
+		i += 1
+	
+	add_help("{$title$}", "The current song's title.")
+	add_help("{$artist$}", "The current song's artist, can be empty.")
+	add_help("{$album$}", "The current song's album name, can be empty.")
+	add_help("{$artwork$}", "Artwork from the current song, could be a cover art or a video thumbnail. Will be output as an URL in the text file, and an image element in the HTML file.")
+	add_help("{$if_artist$...$}", "If the current song has an artist defined, this is replaced with whatever you write in for ... - otherwise, it gets removed. Use this for seperators between title and artist.")
+	add_help("{$if_album$...$}", "Like above, but for the album name.")
 	frm_help.pack(fill=tk.X, pady=5)
 	frm_output.pack(fill=tk.X, padx=10, pady=5)
 

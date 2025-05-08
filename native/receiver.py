@@ -24,14 +24,28 @@ def handle(config):
 		formatted = html.escape(config["format"])
 
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if "artist" in msg else "", formatted)
+		formatted = re.sub(r"\{\$if_album\$(.+?)\$\}", r"\1" if "album" in msg else "", formatted)
 
-		raw_formatted = formatted.replace("{$title$}", msg["title"])
+		raw_formatted = formatted.replace("{$title$}", msg["title"] if "title" in msg else "")
 		raw_formatted = raw_formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
+		raw_formatted = raw_formatted.replace("{$album$}", msg["album"] if "album" in msg else "")
+		raw_formatted = raw_formatted.replace("{$artwork$}", msg["artwork"] if "artwork" in msg else "")
 
-		html_formatted = formatted.replace("{$title$}", '<span id="title">' + html.escape(msg["title"]) + "</span>")
+		html_formatted = formatted.replace(
+				"{$title$}",
+				('<span id="title">' + html.escape(msg["title"]) + "</span>") if "title" in msg else ""
+			)
 		html_formatted = html_formatted.replace(
 				"{$artist$}",
 				('<span id="artist">' + html.escape(msg["artist"]) + "</span>") if "artist" in msg else ""
+			)
+		html_formatted = html_formatted.replace(
+				"{$album$}",
+				('<span id="album">' + html.escape(msg["album"]) + "</span>") if "album" in msg else ""
+			)
+		html_formatted = html_formatted.replace(
+				"{$artwork$}",
+				('<img id="artwork" src="' + html.escape(msg["artwork"]) + '" />') if "artwork" in msg else ""
 			)
 
 		with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt"), "w") as outfile:
