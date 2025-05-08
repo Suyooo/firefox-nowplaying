@@ -5,23 +5,29 @@
  */
 
 /**
- * @callback TitleHandlerFunc
- * @param {string} pageTitle
- * @returns {?{title: string, artist?: string}}
+ * @typedef Metadata
+ * @property {?string} title
+ * @property {?string} artist
+ * @property {?string} album
+ * @property {?string} artwork
  */
 
 /**
- * @type {Object.<string, TitleHandlerFunc>}
+ * @callback MetadataHandlerFunc
+ * @param {Metadata} metadata
+ * @returns {?Metadata}
+ */
+
+/**
+ * @type {Object.<string, MetadataHandlerFunc>}
  */
 const SITE_HANDLERS = {
-	"spotify.com": (pageTitle) => {
-		const split = pageTitle.split(" • ");
-		if (split.length !== 2) return null;
-		return { title: split[0], artist: split[1] };
-	},
-	"youtube.com": (pageTitle) => {
-		if (!pageTitle.endsWith(" - YouTube")) return null;
-		return { title: pageTitle.substring(0, pageTitle.length - 10) };
+	"open.spotify.com": (metadata) => {
+		if (metadata.artist == null && metadata.album == null) {
+			// Ads on Spotify have no artist or album. Skip these!
+			return null;
+		}
+		return metadata;
 	},
 };
 
@@ -52,13 +58,37 @@ browser.action.onClicked.addListener(async () => {
 	}
 });
 
-browser.tabs.onUpdated.addListener(sendSongTitle, { urls: ["<all_urls>"] });
+browser.runtime.onMessage.addListener(
+	async (/** @type ('unload') | {metadata: ?MediaMetadata, host: string} */ message) => {
+		console.log("Received message.", message);
+		if (message === "unload") {
+			const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+			stop(trackedTabId, "The tracked tab left the page");
+		} else if (message.metadata != null) {
+			/** @type Metadata */
+			const metadata = {
+				title: message.metadata.title || null,
+				artist: message.metadata.artist || null,
+				album: message.metadata.album || null,
+				artwork: null,
+			};
 
-// Currently only used for notifying the background script of unload events, so no further checks needed
-browser.runtime.onMessage.addListener(async () => {
-	const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-	stop(trackedTabId, "The tracked tab left the page");
-});
+			let bestArtwork = message.metadata.artwork?.[0];
+			for (const a of message.metadata.artwork.slice(1)) {
+				if (a?.sizes && (!bestArtwork?.sizes || parseInt(a.sizes) > parseInt(bestArtwork.sizes))) {
+					bestArtwork = a;
+				}
+			}
+			metadata.artwork = bestArtwork?.src;
+
+			console.log("Processed metadata.", metadata);
+			const handledMetadata =
+				SITE_HANDLERS[message.host] == undefined ? metadata : SITE_HANDLERS[message.host](metadata);
+			console.log("Handled metadata.", handledMetadata);
+			if (handledMetadata != null) sendSongTitle(metadata);
+		}
+	}
+);
 
 // Handle onUpdateAvailable to avoid restarts while the extension is active. Only reload if no tab is tracked
 browser.runtime.onUpdateAvailable.addListener(async () => {
@@ -85,21 +115,45 @@ async function start(tab) {
 			sendError("No website loaded in this tab.");
 			return;
 		}
-		if (SITE_HANDLERS[tabHost] == null) {
-			sendError(`Now Playing does not support ${tabHost}.`);
-			return;
-		}
 
 		console.log(`Setting tracked tab ID to #${tab.id}`);
 		await browser.storage.session.set({ tabId: tab.id });
-		sendSongTitle(tab.id, null, tab);
 
 		await browser.scripting.executeScript({
 			target: { tabId: tab.id },
 			func: () => {
-				addEventListener("beforeunload", () => {
-					browser.runtime.sendMessage(0);
-				});
+				function unloadHandler() {
+					browser.runtime.sendMessage("unload");
+					removeEventListener("beforeunload", unloadHandler);
+				}
+				addEventListener("beforeunload", unloadHandler);
+
+				let stopUpdate = false;
+				function messageHandler(/** @type ('stop') */ message) {
+					if (message === "stop") stopUpdate = true;
+					browser.runtime.onMessage.removeListener(messageHandler);
+				}
+				browser.runtime.onMessage.addListener(messageHandler);
+
+				let previousMetadata = null;
+				function update() {
+					if (navigator.mediaSession.metadata && navigator.mediaSession.metadata != previousMetadata) {
+						console.log("Metadata updated.", navigator.mediaSession.metadata);
+						previousMetadata = navigator.mediaSession.metadata;
+						// MediaMetadata is a weird fake object that can't be serialized. Workaround:
+						browser.runtime.sendMessage({
+							host: window.location.host,
+							metadata: {
+								title: previousMetadata.title,
+								artist: previousMetadata.artist,
+								album: previousMetadata.album,
+								artwork: previousMetadata.artwork,
+							},
+						});
+					}
+					if (!stopUpdate) setTimeout(update, 1000);
+				}
+				update();
 			},
 		});
 
@@ -119,6 +173,8 @@ async function stop(tabId, reason = null) {
 	console.log(`Unsetting tracked tab ID`);
 	await browser.storage.session.set({ tabId: null });
 	updateActionButton(false, tabId);
+
+	browser.tabs.sendMessage(tabId, "stop");
 
 	if (reason) notify(`Stopped (${reason}).`);
 	else notify("Stopped.");
@@ -181,25 +237,11 @@ function getTabHost(url) {
 }
 
 /**
- * @param {number} tabId
- * @param {?browser.tabs._OnUpdatedChangeInfo} _changeInfo
- * @param {browser.tabs.Tab} tab
+ * @param {Metadata} metadata
  */
-async function sendSongTitle(tabId, _changeInfo, tab) {
-	if (tabId != (await browser.storage.session.get({ tabId: null })).tabId) return;
-	console.log("Received tracked tab update.", tab.url, tab.title);
-	if (!tab.url) return;
-	const tabHost = getTabHost(tab.url);
-	if (!tab.title || !tabHost) return;
-
-	console.log("Using handler for " + tabHost);
-	const handler = SITE_HANDLERS[tabHost];
-	if (handler == null) return;
-	const result = handler(tab.title);
-	if (result == null) return;
-
-	console.log("Sending.", result);
-	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", result).catch((e) => e);
+async function sendSongTitle(metadata) {
+	console.log("Sending.", metadata);
+	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", metadata).catch((e) => e);
 	console.log("Application replied.", ret);
 	if (ret != "1") {
 		sendError("Error in desktop application: " + ret);
