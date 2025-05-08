@@ -71,9 +71,9 @@ You can now use the CSS field in the configuration tool to fully style the overl
 rules for the `#nowplaying` selector to style the container around all of the text, the `#title`, `#artist` and `#album` selectors to style just those values, and the `#artwork` selector to position the cover art. Note that the HTML file
 won't update until the song changes while the Firefox extension is active!
 
-Be warned that the "Custom CSS" option in the Browser source might lead to flickering, since that CSS block is loaded
-with a slight delay after each refresh. But you can still use it for just trying out styles, and then simply copy it
-into the configuration tool to properly set the CSS up.
+Be warned that the "Custom CSS" option in the OBS Browser source settings might lead to flickering, since that CSS block
+is loaded with a slight delay after each refresh. But you can still use it for just trying out styles, and then simply
+copy it into the configuration tool to properly set the CSS up.
 
 Here's the CSS used for the example screenshots at the top, to give you a start:
 
@@ -102,7 +102,7 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 	border: 2px white solid;
 	border-radius: 20px;
 	font-family: Quicksand;
-	padding: 5px 20px 10px;
+	padding: 5px 60px 10px 20px;
 }
 
 #nowplaying::before {
@@ -117,11 +117,17 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 	color: #003333;
 	font-weight: bold;
 	font-size: 20px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 #artist {
 	color: #007777;
 	font-size: 14px;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 
 #artwork {
@@ -129,5 +135,7 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 	right: 4px;
 	height: 62px;
 	border-radius: 12px;
+	aspect-ratio: 1;
+	object-fit: cover;
 }
 ```
