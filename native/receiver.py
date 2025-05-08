@@ -23,29 +23,37 @@ def handle(config):
 		msg = receive()
 		formatted = html.escape(config["format"])
 
-		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if "artist" in msg else "", formatted)
-		formatted = re.sub(r"\{\$if_album\$(.+?)\$\}", r"\1" if "album" in msg else "", formatted)
+		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if ("artist" in msg and msg["artist"]) else "", formatted)
+		formatted = re.sub(r"\{\$if_album\$(.+?)\$\}", r"\1" if ("album" in msg and msg["album"]) else "", formatted)
 
-		raw_formatted = formatted.replace("{$title$}", msg["title"] if "title" in msg else "")
-		raw_formatted = raw_formatted.replace("{$artist$}", msg["artist"] if "artist" in msg else "")
-		raw_formatted = raw_formatted.replace("{$album$}", msg["album"] if "album" in msg else "")
-		raw_formatted = raw_formatted.replace("{$artwork$}", msg["artwork"] if "artwork" in msg else "")
+		raw_formatted = formatted.replace("{$title$}", 
+			msg["title"] if ("title" in msg and msg["title"]) else "")
+		raw_formatted = raw_formatted.replace("{$artist$}", 
+			msg["artist"] if ("artist" in msg and msg["artist"]) else "")
+		raw_formatted = raw_formatted.replace("{$album$}", 
+			msg["album"] if ("album" in msg and msg["album"]) else "")
+		raw_formatted = raw_formatted.replace("{$artwork$}", 
+			msg["artwork"] if ("artwork" in msg and msg["artwork"]) else "")
 
 		html_formatted = formatted.replace(
 				"{$title$}",
-				('<span id="title">' + html.escape(msg["title"]) + "</span>") if "title" in msg else ""
+				('<span id="title">' + html.escape(msg["title"]) + "</span>")
+					if ("title" in msg and msg["title"]) else ""
 			)
 		html_formatted = html_formatted.replace(
 				"{$artist$}",
-				('<span id="artist">' + html.escape(msg["artist"]) + "</span>") if "artist" in msg else ""
+				('<span id="artist">' + html.escape(msg["artist"]) + "</span>")
+					if ("artist" in msg and msg["artist"]) else ""
 			)
 		html_formatted = html_formatted.replace(
 				"{$album$}",
-				('<span id="album">' + html.escape(msg["album"]) + "</span>") if "album" in msg else ""
+				('<span id="album">' + html.escape(msg["album"]) + "</span>")
+					if ("album" in msg and msg["album"]) else ""
 			)
 		html_formatted = html_formatted.replace(
 				"{$artwork$}",
-				('<img id="artwork" src="' + html.escape(msg["artwork"]) + '" />') if "artwork" in msg else ""
+				('<img id="artwork" src="' + html.escape(msg["artwork"]) + '" />')
+					if ("artwork" in msg and msg["artwork"]) else ""
 			)
 
 		with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt"), "w") as outfile:
