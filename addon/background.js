@@ -87,14 +87,14 @@ async function start(tab) {
 			return;
 		}
 
-		console.log(`Setting tracked tab ID to #${tab.id}`);
-		await browser.storage.session.set({ tabId: tab.id });
-
 		console.log("Injecting script");
 		await browser.scripting.executeScript({
 			target: { tabId: tab.id },
 			files: ["content.js"],
 		});
+
+		console.log(`Setting tracked tab ID to #${tab.id}`);
+		await browser.storage.session.set({ tabId: tab.id });
 
 		notify("Started, now tracking this tab.");
 		updateActionButton(true, tab.id);
