@@ -91,32 +91,57 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 ```
 
 ```css
-/* Text Format: "{$title$}{$artist$}{$artwork$}" */
+/* Text Format: <div id="my_container">{$title$}{$artist$}</div>{$artwork$} */
 
+/* This is the main container */
 #nowplaying {
-	position: relative;
-	width: 300px;
+	/* This is a flexbox - place items horizontally */
 	display: flex;
-	flex-direction: column;
+	gap: 5px;
+	width: 350px;
+	/* Using a fancy gradient as the background - https://cssgradient.io/ */
 	background: linear-gradient(0deg, rgba(255, 204, 255, 1) 0%, rgba(204, 255, 255, 1) 50%, rgba(255, 255, 255, 1) 100%);
+	/* Add a border, round the corners, and add some space between items and the border */
 	border: 2px white solid;
 	border-radius: 20px;
+	padding: 5px;
+	/* Choose a nice font */
 	font-family: Quicksand;
-	padding: 5px 60px 10px 20px;
 }
 
+/* We can add extra text using the ::before and ::after pseudo-elements */
 #nowplaying::before {
 	content: "NOW PLAYING";
+	/* Place this at fixed coordinates */
+	position: absolute;
+	top: 5px;
+	left: 10px;
+	/* Text style */
 	color: #770077;
 	font-size: 10px;
-	margin-left: -10px;
 	letter-spacing: 3px;
+}
+
+/* This is a custom container we defined in the text format */
+#my_container {
+	/* This is a vertical flexbox */
+	display: flex;
+	flex-direction: column;
+	/* Center content along the main axis */
+	justify-content: center;
+	/* Make this as big as possible in the parent's flexbox */
+	flex-grow: 1;
+	/* Cut off text if it is too long */
+	overflow: hidden;
+	/* Add some space on just the left side */
+	padding-left: 15px;
 }
 
 #title {
 	color: #003333;
 	font-weight: bold;
 	font-size: 20px;
+	/* Do not break lines - if the title is too long, cut it of with triple dots */
 	white-space: nowrap;
 	text-overflow: ellipsis;
 	overflow: hidden;
@@ -131,11 +156,13 @@ Here's the CSS used for the example screenshots at the top, to give you a start:
 }
 
 #artwork {
-	position: absolute;
-	right: 4px;
-	height: 62px;
+	/* Fixed height, rounded corners */
+	height: 64px;
 	border-radius: 12px;
+	/* Make this element always a square, even if the image is a different aspect ratio */
 	aspect-ratio: 1;
+	/* If the image is not square, cut off the sides so the square is fully filled */
+	/* If you prefer letterboxing/pillarboxing, try object-fit: contain; */
 	object-fit: cover;
 }
 ```
