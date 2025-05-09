@@ -21,6 +21,9 @@ def send(msg):
 def handle(config):
 	try:
 		msg = receive()
+		if "version" in msg and msg["version"] != 1:
+			raise Exception("The desktop application is outdated, please update! https://github.com/Suyooo/firefox-nowplaying/releases/")
+
 		formatted = config["format"]
 
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if ("artist" in msg and msg["artist"]) else "", formatted)

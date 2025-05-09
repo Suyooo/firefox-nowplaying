@@ -84,6 +84,13 @@ def handle(config):
 	btn_save = tk.Button(text="Save Configuration", command=click_save)
 	btn_save.pack(fill=tk.X, padx=10, pady=10)
 
+	frm_footer = tk.Frame()
+	lbl_version = tk.Label(master=frm_footer, text="v1.3.0", font=("sans-serif", 8))
+	lbl_version.pack(side=tk.LEFT)
+	lbl_url = tk.Label(master=frm_footer, text="https://github.com/Suyooo/firefox-nowplaying/", font=("sans-serif", 8))
+	lbl_url.pack(side=tk.RIGHT)
+	frm_footer.pack(fill=tk.X)
+
 	root.mainloop()
 
 
