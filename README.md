@@ -78,7 +78,7 @@ copy it into the configuration tool to properly set the CSS up.
 Here's the CSS used for the example screenshots at the top, to give you a start:
 
 ```css
-/* Text Format: "🎜 {$title$}{$if_artist$ - $}{$artist$}" */
+/* Text Format: 🎜 {$title$}{$if_artist$ - $}{$artist$} */
 
 #nowplaying {
 	background: rgba(0, 0, 0, 0.5);

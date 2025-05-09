@@ -20,6 +20,13 @@ try {
 			// Ads on Spotify have no artist or album. Skip these!
 			return null;
 		},
+		"youtube.com": (metadata) => {
+			if (document.querySelector("div.ad-showing")) {
+				// Ignore ads
+				return null;
+			}
+			return metadata;
+		},
 	};
 
 	/** @type {?MetadataHandlerFunc} */
