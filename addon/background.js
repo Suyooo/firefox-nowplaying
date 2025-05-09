@@ -1,38 +1,15 @@
 /// <reference types="firefox-webext-browser"/>
 
 /*
- * SITE HANDLERS
+ * LISTENERS
  */
 
 /**
- * @typedef Metadata
+ * @typedef ProcessedMetadata
  * @property {?string} title
  * @property {?string} artist
  * @property {?string} album
  * @property {?string} artwork
- */
-
-/**
- * @callback MetadataHandlerFunc
- * @param {Metadata} metadata
- * @returns {?Metadata}
- */
-
-/**
- * @type {Object.<string, MetadataHandlerFunc>}
- */
-const SITE_HANDLERS = {
-	"open.spotify.com": (metadata) => {
-		if (metadata.artist == null && metadata.album == null) {
-			// Ads on Spotify have no artist or album. Skip these!
-			return null;
-		}
-		return metadata;
-	},
-};
-
-/*
- * LISTENERS
  */
 
 browser.action.onClicked.addListener(async () => {
@@ -65,7 +42,7 @@ browser.runtime.onMessage.addListener(
 			const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
 			stop(trackedTabId, "The tracked tab left the page");
 		} else if (message.metadata != null) {
-			/** @type Metadata */
+			/** @type ProcessedMetadata */
 			const metadata = {
 				title: message.metadata.title || null,
 				artist: message.metadata.artist || null,
@@ -81,11 +58,7 @@ browser.runtime.onMessage.addListener(
 			}
 			metadata.artwork = bestArtwork?.src;
 
-			console.log("Processed metadata.", metadata);
-			const handledMetadata =
-				SITE_HANDLERS[message.host] == undefined ? metadata : SITE_HANDLERS[message.host](metadata);
-			console.log("Handled metadata.", handledMetadata);
-			if (handledMetadata != null) sendSongTitle(metadata);
+			sendSongTitle(metadata);
 		}
 	}
 );
@@ -119,42 +92,10 @@ async function start(tab) {
 		console.log(`Setting tracked tab ID to #${tab.id}`);
 		await browser.storage.session.set({ tabId: tab.id });
 
+		console.log("Injecting script");
 		await browser.scripting.executeScript({
 			target: { tabId: tab.id },
-			func: () => {
-				function unloadHandler() {
-					browser.runtime.sendMessage("unload");
-					removeEventListener("beforeunload", unloadHandler);
-				}
-				addEventListener("beforeunload", unloadHandler);
-
-				let stopUpdate = false;
-				function messageHandler(/** @type ('stop') */ message) {
-					if (message === "stop") stopUpdate = true;
-					browser.runtime.onMessage.removeListener(messageHandler);
-				}
-				browser.runtime.onMessage.addListener(messageHandler);
-
-				let previousMetadata = null;
-				function update() {
-					if (navigator.mediaSession.metadata && navigator.mediaSession.metadata != previousMetadata) {
-						console.log("Metadata updated.", navigator.mediaSession.metadata);
-						previousMetadata = navigator.mediaSession.metadata;
-						// MediaMetadata is a weird fake object that can't be serialized. Workaround:
-						browser.runtime.sendMessage({
-							host: window.location.host,
-							metadata: {
-								title: previousMetadata.title,
-								artist: previousMetadata.artist,
-								album: previousMetadata.album,
-								artwork: previousMetadata.artwork,
-							},
-						});
-					}
-					if (!stopUpdate) setTimeout(update, 1000);
-				}
-				update();
-			},
+			files: ["content.js"],
 		});
 
 		notify("Started, now tracking this tab.");
@@ -237,7 +178,7 @@ function getTabHost(url) {
 }
 
 /**
- * @param {Metadata} metadata
+ * @param {ProcessedMetadata} metadata
  */
 async function sendSongTitle(metadata) {
 	console.log("Sending.", metadata);
