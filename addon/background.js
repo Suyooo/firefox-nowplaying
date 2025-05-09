@@ -35,33 +35,31 @@ browser.action.onClicked.addListener(async () => {
 	}
 });
 
-browser.runtime.onMessage.addListener(
-	async (/** @type ('unload') | {metadata: ?MediaMetadata, host: string} */ message) => {
-		console.log("Received message.", message);
-		if (message === "unload") {
-			const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
-			stop(trackedTabId, "The tracked tab left the page");
-		} else if (message.metadata != null) {
-			/** @type ProcessedMetadata */
-			const metadata = {
-				title: message.metadata.title || null,
-				artist: message.metadata.artist || null,
-				album: message.metadata.album || null,
-				artwork: null,
-			};
+browser.runtime.onMessage.addListener(async (/** @type ('unload') | ?MediaMetadata */ message) => {
+	console.log("Received message.", message);
+	if (message === "unload") {
+		const trackedTabId = (await browser.storage.session.get({ tabId: null })).tabId;
+		stop(trackedTabId, "The tracked tab left the page");
+	} else if (message != null) {
+		/** @type ProcessedMetadata */
+		const metadata = {
+			title: message.title || null,
+			artist: message.artist || null,
+			album: message.album || null,
+			artwork: null,
+		};
 
-			let bestArtwork = message.metadata.artwork?.[0];
-			for (const a of message.metadata.artwork.slice(1)) {
-				if (a?.sizes && (!bestArtwork?.sizes || parseInt(a.sizes) > parseInt(bestArtwork.sizes))) {
-					bestArtwork = a;
-				}
+		let bestArtwork = message.artwork?.[0];
+		for (const a of message.artwork.slice(1)) {
+			if (a?.sizes && (!bestArtwork?.sizes || parseInt(a.sizes) > parseInt(bestArtwork.sizes))) {
+				bestArtwork = a;
 			}
-			metadata.artwork = bestArtwork?.src;
-
-			sendSongTitle(metadata);
 		}
+		metadata.artwork = bestArtwork?.src;
+
+		sendSongTitle(metadata);
 	}
-);
+});
 
 // Handle onUpdateAvailable to avoid restarts while the extension is active. Only reload if no tab is tracked
 browser.runtime.onUpdateAvailable.addListener(async () => {
@@ -83,8 +81,8 @@ async function start(tab) {
 			sendError("No website loaded in this tab.");
 			return;
 		}
-		const tabHost = getTabHost(tab.url);
-		if (!tabHost) {
+		const url = new URL(tab.url);
+		if (!url.host) {
 			sendError("No website loaded in this tab.");
 			return;
 		}
@@ -171,18 +169,15 @@ function updateActionButton(active, tabId) {
  */
 
 /**
- * @param {string} url
- */
-function getTabHost(url) {
-	return new URL(url).host.split(".").slice(-2, 99).join(".");
-}
-
-/**
  * @param {ProcessedMetadata} metadata
  */
 async function sendSongTitle(metadata) {
-	console.log("Sending.", metadata);
-	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", metadata).catch((e) => e);
+	const message = {
+		...metadata,
+		version: parseInt(browser.runtime.getManifest().version.split(".")[0]),
+	};
+	console.log("Sending.", message);
+	const ret = await browser.runtime.sendNativeMessage("be.suyo.firefox_nowplaying", message).catch((e) => e);
 	console.log("Application replied.", ret);
 	if (ret != "1") {
 		sendError("Error in desktop application: " + ret);

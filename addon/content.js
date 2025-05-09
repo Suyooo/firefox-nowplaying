@@ -97,10 +97,7 @@ try {
 				}
 
 				previousHandledMetadata = metadataStringified;
-				browser.runtime.sendMessage({
-					host: window.location.host,
-					metadata: metadataClone,
-				});
+				browser.runtime.sendMessage(metadataClone);
 			}
 		} catch (e) {
 			console.error(e);
