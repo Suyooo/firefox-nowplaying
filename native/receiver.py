@@ -21,7 +21,7 @@ def send(msg):
 def handle(config):
 	try:
 		msg = receive()
-		formatted = html.escape(config["format"])
+		formatted = config["format"]
 
 		formatted = re.sub(r"\{\$if_artist\$(.+?)\$\}", r"\1" if ("artist" in msg and msg["artist"]) else "", formatted)
 		formatted = re.sub(r"\{\$if_album\$(.+?)\$\}", r"\1" if ("album" in msg and msg["album"]) else "", formatted)
