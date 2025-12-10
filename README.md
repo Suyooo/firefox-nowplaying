@@ -68,7 +68,8 @@ If you'd like to be more flexible with styling, you can use a Browser source to 
 Create a Browser source in OBS, check "Local File", and choose the HTML file in the application's folder.
 
 You can now use the CSS field in the configuration tool to fully style the overlay however you want, by writing CSS
-rules for the `#nowplaying` selector to style the container around all of the text, the `#title`, `#artist` and `#album` selectors to style just those values, and the `#artwork` selector to position the cover art. Note that the HTML file
+rules for the `#nowplaying` selector to style the container around all of the text, the `#title`, `#artist` and `#album`
+selectors to style just those values, and the `#artwork` selector to position the cover art. Note that the HTML file
 won't update until the song changes while the Firefox extension is active!
 
 Be warned that the "Custom CSS" option in the OBS Browser source settings might lead to flickering, since that CSS block

@@ -59,11 +59,17 @@ def handle(config):
 					if ("artwork" in msg and msg["artwork"]) else ""
 			)
 
-		with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt"), "w") as outfile:
+		text_file_path = os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.txt")
+		with open(text_file_path + ".tmp", "w") as outfile:
 			outfile.write(raw_formatted)
+		os.replace(text_file_path + ".tmp", text_file_path)
+
+		html_file_path = os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.html")
 		with importlib.resources.open_text(__name__, "nowplaying-template.html") as templfile:
-			with open(os.path.join(os.path.dirname(sys.argv[0]), "nowplaying.html"), "w") as outfile:
+			with open(html_file_path + ".tmp", "w") as outfile:
 				outfile.write(templfile.read().replace("$FORMAT$", html_formatted).replace("$CSS$", config["css"]))
+		os.replace(html_file_path + ".tmp", html_file_path)
+		
 		send("1")
 	except Exception as e:
 		msg = str(e)
