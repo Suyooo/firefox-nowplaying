@@ -36,6 +36,15 @@ for them or test it there. If you're giving it a try on MacOS, let me know wheth
 1. Create a new folder in your favourite location and put the application in there
 1. Launch the `.pyzw` file to open the configuration tool and hit the "Connect" button
 
+### Updating
+
+The extension will update automatically if you installed it from the Firefox Addon store. It will notify you if a new
+major update for the native application is required.
+
+To update the native application, simply download the newest release and replace the previous file. As long as the
+folder and filename stay the same, you don't even have to click "Connect" again (but it doesn't hurt to click it, if you
+want to make sure everything is set up properly).
+
 ## Usage
 
 Once you have installed the extension and connected the application, you can now click the extension icon in Firefox to
